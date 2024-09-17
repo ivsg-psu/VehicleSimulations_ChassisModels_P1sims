@@ -1,33 +1,29 @@
-%% Introduction to and Purpose of the Plot Road codes
+%% Introduction to and Purpose of the P1simscodes
 % This is a strter script to show the primary functionality of the
-% plotRoad library.
+% P1sims library.
 %
 % This is the explanation of the code that can be found by running
 %
-%       script_demo_plotRoad
+%       script_demo_P1sims
 %
-% This is a script to demonstrate the functions within the PlotRoad code
+% This is a script to demonstrate the functions within the P1sims code
 % library. This code repo is typically located at:
 %
-%   https://github.com/ivsg-psu/FieldDataCollection_VisualizingFieldData_PlotRoad
+%   https://github.com/ivsg-psu/VehicleSimulations_ChassisModels_P1sims
 %
 % If you have questions or comments, please contact Sean Brennan at
-% sbrennan@psu.edu
+% sbrennan@psu.edu, Craig Beal at cbeal@bucknell.edu
 
 
 
 %% Revision History:
-% 2023_06_01 - sbrennan@psu.edu and vbw5054@psu.edu
-% -- First write of code using LOadWZ code as starter
-% 2023_08_10 - sbrennan@psu.edu
-% -- Changed name to PlotRoad to allow more flexibility for non-track plots
-% 2023_09_04 - sbrennan@psu.edu
-% -- Added animatePlot function
+% 2024_09_17 - sbrennan@psu.edu
+% -- First write of code by cloning PlotRoad as starter
 
 
 %% To-Do list
-% 2024_08_13 - S. Brennan
-% -- Move fcn_plotRoad_breakArrayByNans out of this library, into Debug
+% 2024_09_17 - S. Brennan
+% -- Need to do a top-to-bottom clean of code to prep it for P1sim work
 
 %% Prep the workspace
 close all
@@ -71,10 +67,15 @@ library_name{ith_library}    = 'BreakDataIntoLaps_v2023_08_25';
 library_folders{ith_library} = {'Functions'};
 library_url{ith_library}     = 'https://github.com/ivsg-psu/FeatureExtraction_DataClean_BreakDataIntoLaps/archive/refs/tags/BreakDataIntoLaps_v2023_08_25.zip';
 
+ith_library = ith_library+1;
+library_name{ith_library}    = 'PlotRoad_v2024_09_14';
+library_folders{ith_library} = {'Functions', 'Data'};
+library_url{ith_library}     = 'https://github.com/ivsg-psu/FieldDataCollection_VisualizingFieldData_PlotRoad/archive/refs/tags/PlotRoad_v2024_09_14.zip'; 
+
 
 %% Clear paths and folders, if needed
 if 1==0
-    clear flag_plotRoad_Folders_Initialized;
+    clear flag_P1sims_Folders_Initialized;
     fcn_INTERNAL_clearUtilitiesFromPathAndFolders;
 
     % Clean up data files
@@ -92,18 +93,18 @@ end
 
 
 %% Do we need to set up the work space?
-if ~exist('flag_plotRoad_Folders_Initialized','var')
+if ~exist('flag_P1sims_Folders_Initialized','var')
     this_project_folders = {'Functions','Data'};
     fcn_INTERNAL_initializeUtilities(library_name,library_folders,library_url,this_project_folders);
-    flag_plotRoad_Folders_Initialized = 1;
+    flag_P1sims_Folders_Initialized = 1;
 end
 
 %% Load hard-coded vectors
 % These are used to align key data to a local coordinate system wherein
-% that data is axis-aligned.
+% that data is axis-aligned. Usually NOT needed
 
-hard_coded_reference_unit_tangent_vector_outer_lanes   = [0.793033249943519   0.609178351949592];
-hard_coded_reference_unit_tangent_vector_LC_south_lane = [0.794630317120972   0.607093616431785];
+% hard_coded_reference_unit_tangent_vector_outer_lanes   = [0.793033249943519   0.609178351949592];
+% hard_coded_reference_unit_tangent_vector_LC_south_lane = [0.794630317120972   0.607093616431785];
 
 %% Set environment flags that define the ENU origin
 % This sets the "center" of the ENU coordinate system for all plotting
@@ -124,10 +125,8 @@ setenv('MATLABFLAG_PLOTROAD_ALIGNMATLABLLAPLOTTINGIMAGES_LON','0.0000054');
 
 %% Set environment flags for input checking
 % These are values to set if we want to check inputs or do debugging
-% setenv('MATLABFLAG_FINDEDGE_FLAG_CHECK_INPUTS','1');
-% setenv('MATLABFLAG_FINDEDGE_FLAG_DO_DEBUG','1');
-setenv('MATLABFLAG_PLOTROAD_FLAG_CHECK_INPUTS','1');
-setenv('MATLABFLAG_PLOTROAD_FLAG_DO_DEBUG','0');
+setenv('MATLABFLAG_P1SIMS_FLAG_CHECK_INPUTS','1');
+setenv('MATLABFLAG_P1SIMS_FLAG_DO_DEBUG','0');
 
 
 %% Core Functions
