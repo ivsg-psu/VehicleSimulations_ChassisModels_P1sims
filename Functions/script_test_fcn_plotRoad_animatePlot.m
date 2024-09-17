@@ -271,7 +271,7 @@ assert(all(ishandle(h_animatedPlot(:))));
 
 %%%%%
 % Create an animated GIF with "following"?
-if 1==0
+if 1==1
     timeDelay = 0.2;
     filename = 'fcn_plotRoad_animatePlot_plotLLI_follow.gif';
     flagFirstTime = 1;
