@@ -8,8 +8,10 @@ close all
 clc
 
 
-%Run this inital script to define parameters
-p1_params_new
+%Run this inital script to define parameters?
+if 1~=exist('p1params','var')
+    p1_params_new  % Loads the parameters if the variable is not detected in the workspace
+end
 
 %Define inputs to the vehicle model 
 %Define steering input
@@ -22,7 +24,12 @@ TotalTime = 4*Period;
 
 
 %Run the simulation in Simulink
-sim('p1_digital_twin', TotalTime);
+flag_use2023a = 1; % A dumb flag variable so that Sean's weak computer can run the old-man version of MATLAB
+if flag_use2023a
+    sim('p1_digital_twin_R2023a',TotalTime);
+else
+    sim('p1_digital_twin', TotalTime); %#ok<UNRCH>
+end
 
 %GPS to position conversions
 LatPos=(rt_GPS(:,5)-40.9546).*111139; %Convert lat GPS signal to m

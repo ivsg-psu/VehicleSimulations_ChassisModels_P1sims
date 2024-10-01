@@ -33,3 +33,10 @@ octave-workspace
 
 # Folders
 Utilities/
+
+# Simulink compile files
+rtwmakecfg.m
+SFB__uint16ToBytes__SFB.mat
+uint16ToBytes.c
+uint16ToBytes.tlc
+uint16ToBytes_wrapper.c

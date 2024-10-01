@@ -35,11 +35,13 @@ p1params.input.handwheelScaling = 250; % scale factor for handwheel potentiomete
 p1params.input.handwheelOffset = 0; % scale factor for handwheel potentiometer (rev/ct)
 
 p1params.input.VAccelFc = 1;        % Accelerator pedal filter cut off frequency (in Hz)
+
 % The following two lines are the result of using the MATLAB butterworth and IIR filter
 % design tools with the cutoff above:
-% N = 6 (for a 6th order Butterworth)
-% wc = p1params.input.VAccelFc*(2*Ts); (set up the normalized filter frequency)
-% [b,a] = butter(N,wc); (design using the specified normalized cutoff frequency)
+N = 6; %(for a 6th order Butterworth)
+wc = p1params.input.VAccelFc*(2*Ts); % (set up the normalized filter frequency)
+[b,a] = butter(N,wc); % (design using the specified normalized cutoff frequency)
+
 p1params.input.VAccelFiltNum = [8.5316e-10
     5.119e-09
    1.2797e-08
@@ -193,4 +195,10 @@ tire.fr.tp = 0.023;                 % pneumatic trail (m)
 tire.rl.tp = 0.023;                 % pneumatic trail (m)
 tire.rr.tp = 0.023;                 % pneumatic trail (m)
 
-
+% Made-up parameteters for slow filter - what's slow mean though?
+[B,A] = butter(2,1/500); % 2nd order, 1 Hz cut-off, Nyquist frequency is 500 Hz given that sampling rate is 1000 Hz
+continuousFilter = tf(B,A);
+discreteFilter = c2d(continuousFilter,Ts,'tustin');
+[NUM_cellarray,DEN_cellarray] = tfdata(discreteFilter);
+hal_filter_num = NUM_cellarray{1};
+hal_filter_den = DEN_cellarray{1};
