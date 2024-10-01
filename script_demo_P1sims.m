@@ -77,18 +77,6 @@ library_url{ith_library}     = 'https://github.com/ivsg-psu/FieldDataCollection_
 if 1==0
     clear flag_P1sims_Folders_Initialized;
     fcn_INTERNAL_clearUtilitiesFromPathAndFolders;
-
-    % Clean up data files
-    traces_mat_filename = fullfile(cd,'Data','AllTracesData.mat'); %%%% not loading centerline data
-    if exist(traces_mat_filename,'file')
-        delete(traces_mat_filename);
-    end
-    marker_clusters_mat_filename = fullfile(cd,'Data','AllMarkerClusterData.mat'); %%%% not loading centerline data
-    if exist(marker_clusters_mat_filename,'file')
-
-        delete(marker_clusters_mat_filename);
-    end
-
 end
 
 
