@@ -31,6 +31,13 @@ else
     sim('p1_digital_twin', TotalTime); %#ok<UNRCH>
 end
 
+%%
+
+parseP1data
+plotAllData
+
+%%
+
 %GPS to position conversions
 LatPos=(rt_GPS(:,5)-40.9546).*111139; %Convert lat GPS signal to m
 LongPos=(rt_GPS(:,6)+76.8820).*111139; %Convert long GPS signal to m
