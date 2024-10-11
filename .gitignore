@@ -21,6 +21,7 @@ sccprj/
 
 # Matlab code generation folders
 codegen/
+_scripts/
 
 # Simulink autosave extension
 *.autosave
@@ -37,6 +38,6 @@ Utilities/
 # Simulink compile files
 rtwmakecfg.m
 SFB__uint16ToBytes__SFB.mat
-uint16ToBytes.c
-uint16ToBytes.tlc
-uint16ToBytes_wrapper.c
+*.c
+*.tlc
+
