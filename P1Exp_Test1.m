@@ -24,7 +24,7 @@ TotalTime = 4*Period;
 
 
 %Run the simulation in Simulink
-flag_use2023a = 1; % A dumb flag variable so that Sean's weak computer can run the old-man version of MATLAB
+flag_use2023a = 0; % A dumb flag variable so that Sean's weak computer can run the old-man version of MATLAB
 if flag_use2023a
     sim('p1_digital_twin_R2023a',TotalTime);
 else

@@ -38,9 +38,9 @@ clc
 clear library_name library_folders library_url
 
 ith_library = 1;
-library_name{ith_library}    = 'DebugTools_v2023_04_22';
+library_name{ith_library}    = 'DebugTools_v2024_10_14';
 library_folders{ith_library} = {'Functions','Data'};
-library_url{ith_library}     = 'https://github.com/ivsg-psu/Errata_Tutorials_DebugTools/archive/refs/tags/DebugTools_v2023_04_22.zip';
+library_url{ith_library}     = 'https://github.com/ivsg-psu/Errata_Tutorials_DebugTools/archive/refs/tags/DebugTools_v2024_10_14.zip';
 
 ith_library = ith_library+1;
 library_name{ith_library}    = 'PathClass_v2024_03_14';
@@ -82,7 +82,7 @@ end
 
 %% Do we need to set up the work space?
 if ~exist('flag_P1sims_Folders_Initialized','var')
-    this_project_folders = {'Functions','Data'};
+    this_project_folders = {'Functions','Data','P1_scripts'};
     fcn_INTERNAL_initializeUtilities(library_name,library_folders,library_url,this_project_folders);
     flag_P1sims_Folders_Initialized = 1;
 end
