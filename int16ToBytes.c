@@ -26,7 +26,7 @@
  * | See matlabroot/simulink/src/sfuntmpl_doc.c for a more detailed template |
  *  -------------------------------------------------------------------------
  *
- * Created: Tue Oct 01 16:46:24 2024
+ * Created: Fri Mar 01 13:52:47 2024
  */
 
 #define S_FUNCTION_LEVEL               2
@@ -54,25 +54,43 @@
 #define IN_0_FRACTIONLENGTH            9
 #define IN_0_BIAS                      0
 #define IN_0_SLOPE                     0.125
-#define NUM_OUTPUTS                    1
+#define NUM_OUTPUTS                    2
 
 /* Output Port  0 */
 #define OUT_PORT_0_NAME                y0
-#define OUTPUT_0_DIMS_ND               {2,1}
-#define OUTPUT_0_NUM_ELEMS             2
-#define OUTPUT_0_WIDTH                 2
+#define OUTPUT_0_DIMS_ND               {1,1}
+#define OUTPUT_0_NUM_ELEMS             1
+#define OUTPUT_0_WIDTH                 1
 #define OUTPUT_DIMS_0_COL              1
 #define OUTPUT_0_DTYPE                 uint8_T
 #define OUTPUT_0_COMPLEX               COMPLEX_NO
 #define OUT_0_BUS_BASED                0
 #define OUT_0_BUS_NAME
-#define OUT_0_DIMS                     2-D
+#define OUT_0_DIMS                     1-D
 #define OUT_0_ISSIGNED                 1
 #define OUT_0_WORDLENGTH               8
 #define OUT_0_FIXPOINTSCALING          1
 #define OUT_0_FRACTIONLENGTH           3
 #define OUT_0_BIAS                     0
 #define OUT_0_SLOPE                    0.125
+
+/* Output Port  1 */
+#define OUT_PORT_1_NAME                y1
+#define OUTPUT_1_DIMS_ND               {1,1}
+#define OUTPUT_1_NUM_ELEMS             1
+#define OUTPUT_1_WIDTH                 1
+#define OUTPUT_DIMS_1_COL              1
+#define OUTPUT_1_DTYPE                 uint8_T
+#define OUTPUT_1_COMPLEX               COMPLEX_NO
+#define OUT_1_BUS_BASED                0
+#define OUT_1_BUS_NAME
+#define OUT_1_DIMS                     1-D
+#define OUT_1_ISSIGNED                 1
+#define OUT_1_WORDLENGTH               8
+#define OUT_1_FIXPOINTSCALING          1
+#define OUT_1_FRACTIONLENGTH           3
+#define OUT_1_BIAS                     0
+#define OUT_1_SLOPE                    0.125
 #define NPARAMS                        0
 #define SAMPLE_TIME_0                  INHERITED_SAMPLE_TIME
 #define NUM_DISC_STATES                0
@@ -81,11 +99,11 @@
 #define CONT_STATES_IC                 [0]
 #define SFUNWIZ_GENERATE_TLC           1
 #define SOURCEFILES                    "__SFB__"
-#define PANELINDEX                     0
+#define PANELINDEX                     N/A
 #define USE_SIMSTRUCT                  0
 #define SHOW_COMPILE_STEPS             0
 #define CREATE_DEBUG_MEXFILE           0
-#define SAVE_CODE_ONLY                 1
+#define SAVE_CODE_ONLY                 0
 #define SFUNWIZ_REVISION               3.0
 
 /* %%%-SFUNWIZ_defines_Changes_END --- EDIT HERE TO _BEGIN */
@@ -93,7 +111,8 @@
 #include "simstruc.h"
 
 extern void int16ToBytes_Outputs_wrapper(const int16_T *u0,
-  uint8_T *y0);
+  uint8_T *y0,
+  uint8_T *y1);
 
 /*====================*
  * S-function methods *
@@ -128,14 +147,14 @@ static void mdlInitializeSizes(SimStruct *S)
     return;
 
   /* Output Port 0 */
-  ssAllowSignalsWithMoreThan2D(S);
-  outputDimsInfo.numDims = 2;
-  outputDimsInfo.width = OUTPUT_0_NUM_ELEMS;
-  int_T out0Dims[] = OUTPUT_0_DIMS_ND;
-  outputDimsInfo.dims = out0Dims;
-  ssSetOutputPortDimensionInfo(S, 0, &outputDimsInfo);
+  ssSetOutputPortWidth(S, 0, OUTPUT_0_NUM_ELEMS);
   ssSetOutputPortDataType(S, 0, SS_UINT8);
   ssSetOutputPortComplexSignal(S, 0, OUTPUT_0_COMPLEX);
+
+  /* Output Port 1 */
+  ssSetOutputPortWidth(S, 1, OUTPUT_1_NUM_ELEMS);
+  ssSetOutputPortDataType(S, 1, SS_UINT8);
+  ssSetOutputPortComplexSignal(S, 1, OUTPUT_1_COMPLEX);
   ssSetNumPWork(S, 0);
   ssSetNumSampleTimes(S, 1);
   ssSetNumRWork(S, 0);
@@ -145,6 +164,7 @@ static void mdlInitializeSizes(SimStruct *S)
   ssSetSimulinkVersionGeneratedIn(S, "10.7");
 
   /* Take care when specifying exception free code - see sfuntmpl_doc.c */
+  ssSetRuntimeThreadSafetyCompliance(S, RUNTIME_THREAD_SAFETY_COMPLIANCE_TRUE);
   ssSetOptions(S, (SS_OPTION_EXCEPTION_FREE_CODE |
                    SS_OPTION_USE_TLC_WITH_ACCELERATOR |
                    SS_OPTION_WORKS_WITH_CODE_REUSE));
@@ -175,25 +195,6 @@ static void mdlSetOutputPortDimensionInfo(SimStruct *S,
 }
 
 #endif
-
-#define MDL_SET_DEFAULT_PORT_DIMENSION_INFO
-
-static void mdlSetDefaultPortDimensionInfo(SimStruct *S)
-{
-  DECL_AND_INIT_DIMSINFO(portDimsInfo);
-  int_T dims[2];
-
-  /* Setting default dimensions for output port 0 */
-  portDimsInfo.width = OUTPUT_0_NUM_ELEMS;
-  dims[0] = OUTPUT_0_NUM_ELEMS;
-  dims[1] = 1;
-  portDimsInfo.numDims = 2;
-  if (ssGetOutputPortNumDimensions(S, 0) == (-1)) {
-    ssSetOutputPortDimensionInfo(S, 0, &portDimsInfo);
-  }
-
-  return;
-}
 
 /* Function: mdlInitializeSampleTimes =========================================
  * Abstract:
@@ -250,7 +251,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 {
   const int16_T *u0 = (int16_T *) ssGetInputPortRealSignal(S, 0);
   uint8_T *y0 = (uint8_T *) ssGetOutputPortRealSignal(S, 0);
-  int16ToBytes_Outputs_wrapper(u0, y0);
+  uint8_T *y1 = (uint8_T *) ssGetOutputPortRealSignal(S, 1);
+  int16ToBytes_Outputs_wrapper(u0, y0, y1);
 }
 
 /* Function: mdlTerminate =====================================================
