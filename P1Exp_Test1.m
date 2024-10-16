@@ -22,6 +22,8 @@ TotalTime = 4*Period;
 
 %future vector definition for steering input change
 
+% Stops the code here
+return;
 
 %Run the simulation in Simulink
 flag_use2023a = 0; % A dumb flag variable so that Sean's weak computer can run the old-man version of MATLAB

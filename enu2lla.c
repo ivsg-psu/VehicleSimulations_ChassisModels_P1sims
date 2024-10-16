@@ -26,7 +26,7 @@
  * | See matlabroot/simulink/src/sfuntmpl_doc.c for a more detailed template |
  *  -------------------------------------------------------------------------
  *
- * Created: Tue Apr 02 11:32:27 2024
+ * Created: Wed Oct 16 14:08:18 2024
  */
 
 #define S_FUNCTION_LEVEL               2
@@ -44,6 +44,7 @@
 #define INPUT_DIMS_0_COL               1
 #define INPUT_0_DTYPE                  real_T
 #define INPUT_0_COMPLEX                COMPLEX_NO
+#define INPUT_0_UNIT                   ""
 #define IN_0_BUS_BASED                 0
 #define IN_0_BUS_NAME
 #define IN_0_DIMS                      1-D
@@ -63,6 +64,7 @@
 #define INPUT_DIMS_1_COL               1
 #define INPUT_1_DTYPE                  real_T
 #define INPUT_1_COMPLEX                COMPLEX_NO
+#define INPUT_1_UNIT                   ""
 #define IN_1_BUS_BASED                 0
 #define IN_1_BUS_NAME
 #define IN_1_DIMS                      1-D
@@ -82,6 +84,7 @@
 #define INPUT_DIMS_2_COL               1
 #define INPUT_2_DTYPE                  real_T
 #define INPUT_2_COMPLEX                COMPLEX_NO
+#define INPUT_2_UNIT                   ""
 #define IN_2_BUS_BASED                 0
 #define IN_2_BUS_NAME
 #define IN_2_DIMS                      1-D
@@ -101,6 +104,7 @@
 #define INPUT_DIMS_3_COL               1
 #define INPUT_3_DTYPE                  real_T
 #define INPUT_3_COMPLEX                COMPLEX_NO
+#define INPUT_3_UNIT                   ""
 #define IN_3_BUS_BASED                 0
 #define IN_3_BUS_NAME
 #define IN_3_DIMS                      1-D
@@ -120,6 +124,7 @@
 #define INPUT_DIMS_4_COL               1
 #define INPUT_4_DTYPE                  real_T
 #define INPUT_4_COMPLEX                COMPLEX_NO
+#define INPUT_4_UNIT                   ""
 #define IN_4_BUS_BASED                 0
 #define IN_4_BUS_NAME
 #define IN_4_DIMS                      1-D
@@ -139,6 +144,7 @@
 #define INPUT_DIMS_5_COL               1
 #define INPUT_5_DTYPE                  real_T
 #define INPUT_5_COMPLEX                COMPLEX_NO
+#define INPUT_5_UNIT                   ""
 #define IN_5_BUS_BASED                 0
 #define IN_5_BUS_NAME
 #define IN_5_DIMS                      1-D
@@ -159,6 +165,7 @@
 #define OUTPUT_DIMS_0_COL              1
 #define OUTPUT_0_DTYPE                 real_T
 #define OUTPUT_0_COMPLEX               COMPLEX_NO
+#define OUTPUT_0_UNIT                  ""
 #define OUT_0_BUS_BASED                0
 #define OUT_0_BUS_NAME
 #define OUT_0_DIMS                     1-D
@@ -177,6 +184,7 @@
 #define OUTPUT_DIMS_1_COL              1
 #define OUTPUT_1_DTYPE                 real_T
 #define OUTPUT_1_COMPLEX               COMPLEX_NO
+#define OUTPUT_1_UNIT                  ""
 #define OUT_1_BUS_BASED                0
 #define OUT_1_BUS_NAME
 #define OUT_1_DIMS                     1-D
@@ -195,6 +203,7 @@
 #define OUTPUT_DIMS_2_COL              1
 #define OUTPUT_2_DTYPE                 real_T
 #define OUTPUT_2_COMPLEX               COMPLEX_NO
+#define OUTPUT_2_UNIT                  ""
 #define OUT_2_BUS_BASED                0
 #define OUT_2_BUS_NAME
 #define OUT_2_DIMS                     1-D
@@ -210,13 +219,13 @@
 #define DISC_STATES_IC                 [0]
 #define NUM_CONT_STATES                0
 #define CONT_STATES_IC                 [0]
-#define SFUNWIZ_GENERATE_TLC           1
+#define SFUNWIZ_GENERATE_TLC           0
 #define SOURCEFILES                    "__SFB__"
 #define PANELINDEX                     N/A
 #define USE_SIMSTRUCT                  0
 #define SHOW_COMPILE_STEPS             0
 #define CREATE_DEBUG_MEXFILE           0
-#define SAVE_CODE_ONLY                 0
+#define SAVE_CODE_ONLY                 1
 #define SFUNWIZ_REVISION               3.0
 
 /* %%%-SFUNWIZ_defines_Changes_END --- EDIT HERE TO _BEGIN */
@@ -242,8 +251,6 @@ extern void enu2lla_Outputs_wrapper(const real_T *u0,
  */
 static void mdlInitializeSizes(SimStruct *S)
 {
-  DECL_AND_INIT_DIMSINFO(inputDimsInfo);
-  DECL_AND_INIT_DIMSINFO(outputDimsInfo);
   ssSetNumSFcnParams(S, NPARAMS);
   if (ssGetNumSFcnParams(S) != ssGetSFcnParamsCount(S)) {
     return;                            /* Parameter mismatch will be reported by Simulink */
@@ -297,6 +304,73 @@ static void mdlInitializeSizes(SimStruct *S)
   ssSetInputPortComplexSignal(S, 5, INPUT_5_COMPLEX);
   ssSetInputPortDirectFeedThrough(S, 5, INPUT_5_FEEDTHROUGH);
   ssSetInputPortRequiredContiguous(S, 5, 1);/*direct input signal access*/
+
+  /*
+   * Configure the Units for Input Ports
+   */
+  if (ssGetSimMode(S) != SS_SIMMODE_SIZES_CALL_ONLY) {
+
+#if defined(MATLAB_MEX_FILE)
+
+    UnitId inUnitIdReg;
+    ssRegisterUnitFromExpr(S, INPUT_0_UNIT, &inUnitIdReg);
+    if (inUnitIdReg != INVALID_UNIT_ID) {
+      ssSetInputPortUnit(S, 0, inUnitIdReg);
+    } else {
+      ssSetLocalErrorStatus(S,
+                            "Invalid Unit provided for input port u0 of S-Function enu2lla");
+      return;
+    }
+
+    ssRegisterUnitFromExpr(S, INPUT_1_UNIT, &inUnitIdReg);
+    if (inUnitIdReg != INVALID_UNIT_ID) {
+      ssSetInputPortUnit(S, 1, inUnitIdReg);
+    } else {
+      ssSetLocalErrorStatus(S,
+                            "Invalid Unit provided for input port u1 of S-Function enu2lla");
+      return;
+    }
+
+    ssRegisterUnitFromExpr(S, INPUT_2_UNIT, &inUnitIdReg);
+    if (inUnitIdReg != INVALID_UNIT_ID) {
+      ssSetInputPortUnit(S, 2, inUnitIdReg);
+    } else {
+      ssSetLocalErrorStatus(S,
+                            "Invalid Unit provided for input port u2 of S-Function enu2lla");
+      return;
+    }
+
+    ssRegisterUnitFromExpr(S, INPUT_3_UNIT, &inUnitIdReg);
+    if (inUnitIdReg != INVALID_UNIT_ID) {
+      ssSetInputPortUnit(S, 3, inUnitIdReg);
+    } else {
+      ssSetLocalErrorStatus(S,
+                            "Invalid Unit provided for input port u3 of S-Function enu2lla");
+      return;
+    }
+
+    ssRegisterUnitFromExpr(S, INPUT_4_UNIT, &inUnitIdReg);
+    if (inUnitIdReg != INVALID_UNIT_ID) {
+      ssSetInputPortUnit(S, 4, inUnitIdReg);
+    } else {
+      ssSetLocalErrorStatus(S,
+                            "Invalid Unit provided for input port u4 of S-Function enu2lla");
+      return;
+    }
+
+    ssRegisterUnitFromExpr(S, INPUT_5_UNIT, &inUnitIdReg);
+    if (inUnitIdReg != INVALID_UNIT_ID) {
+      ssSetInputPortUnit(S, 5, inUnitIdReg);
+    } else {
+      ssSetLocalErrorStatus(S,
+                            "Invalid Unit provided for input port u5 of S-Function enu2lla");
+      return;
+    }
+
+#endif
+
+  }
+
   if (!ssSetNumOutputPorts(S, NUM_OUTPUTS))
     return;
 
@@ -314,17 +388,57 @@ static void mdlInitializeSizes(SimStruct *S)
   ssSetOutputPortWidth(S, 2, OUTPUT_2_NUM_ELEMS);
   ssSetOutputPortDataType(S, 2, SS_DOUBLE);
   ssSetOutputPortComplexSignal(S, 2, OUTPUT_2_COMPLEX);
+
+  /*
+   * Configure the Units for Output Ports
+   */
+  if (ssGetSimMode(S) != SS_SIMMODE_SIZES_CALL_ONLY) {
+
+#if defined(MATLAB_MEX_FILE)
+
+    UnitId outUnitIdReg;
+    ssRegisterUnitFromExpr(S, OUTPUT_0_UNIT, &outUnitIdReg);
+    if (outUnitIdReg != INVALID_UNIT_ID) {
+      ssSetOutputPortUnit(S, 0, outUnitIdReg);
+    } else {
+      ssSetLocalErrorStatus(S,
+                            "Invalid Unit provided for output port y0 of S-Function enu2lla");
+      return;
+    }
+
+    ssRegisterUnitFromExpr(S, OUTPUT_1_UNIT, &outUnitIdReg);
+    if (outUnitIdReg != INVALID_UNIT_ID) {
+      ssSetOutputPortUnit(S, 1, outUnitIdReg);
+    } else {
+      ssSetLocalErrorStatus(S,
+                            "Invalid Unit provided for output port y1 of S-Function enu2lla");
+      return;
+    }
+
+    ssRegisterUnitFromExpr(S, OUTPUT_2_UNIT, &outUnitIdReg);
+    if (outUnitIdReg != INVALID_UNIT_ID) {
+      ssSetOutputPortUnit(S, 2, outUnitIdReg);
+    } else {
+      ssSetLocalErrorStatus(S,
+                            "Invalid Unit provided for output port y2 of S-Function enu2lla");
+      return;
+    }
+
+#endif
+
+  }
+
   ssSetNumPWork(S, 0);
   ssSetNumSampleTimes(S, 1);
   ssSetNumRWork(S, 0);
   ssSetNumIWork(S, 0);
   ssSetNumModes(S, 0);
   ssSetNumNonsampledZCs(S, 0);
-  ssSetSimulinkVersionGeneratedIn(S, "10.7");
+  ssSetSimulinkVersionGeneratedIn(S, "24.1");
 
   /* Take care when specifying exception free code - see sfuntmpl_doc.c */
+  ssSetRuntimeThreadSafetyCompliance(S, RUNTIME_THREAD_SAFETY_COMPLIANCE_FALSE);
   ssSetOptions(S, (SS_OPTION_EXCEPTION_FREE_CODE |
-                   SS_OPTION_USE_TLC_WITH_ACCELERATOR |
                    SS_OPTION_WORKS_WITH_CODE_REUSE));
 }
 
