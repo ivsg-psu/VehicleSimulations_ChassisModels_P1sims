@@ -26,7 +26,7 @@
  * | See matlabroot/simulink/src/sfuntmpl_doc.c for a more detailed template |
  *  -------------------------------------------------------------------------
  *
- * Created: Wed Oct 16 14:46:18 2024
+ * Created: Fri Oct 18 11:52:30 2024
  */
 
 #define S_FUNCTION_LEVEL               2
@@ -150,12 +150,6 @@
 /* %%%-SFUNWIZ_defines_Changes_END --- EDIT HERE TO _BEGIN */
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 #include "simstruc.h"
-
-extern void singleToBytes_Outputs_wrapper(const real32_T *u0,
-  uint8_T *y0,
-  uint8_T *y1,
-  uint8_T *y2,
-  uint8_T *y3);
 
 /*====================*
  * S-function methods *
@@ -370,12 +364,20 @@ static void mdlStart(SimStruct *S)
  */
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
-  const real32_T *u0 = (real32_T *) ssGetInputPortRealSignal(S, 0);
-  uint8_T *y0 = (uint8_T *) ssGetOutputPortRealSignal(S, 0);
-  uint8_T *y1 = (uint8_T *) ssGetOutputPortRealSignal(S, 1);
-  uint8_T *y2 = (uint8_T *) ssGetOutputPortRealSignal(S, 2);
-  uint8_T *y3 = (uint8_T *) ssGetOutputPortRealSignal(S, 3);
-  singleToBytes_Outputs_wrapper(u0, y0, y1, y2, y3);
+    const real32_T *u0 = (real32_T *) ssGetInputPortRealSignal(S, 0);
+    uint8_T *y0 = (uint8_T *) ssGetOutputPortRealSignal(S, 0);
+    uint8_T *y1 = (uint8_T *) ssGetOutputPortRealSignal(S, 1);
+    uint8_T *y2 = (uint8_T *) ssGetOutputPortRealSignal(S, 2);
+    uint8_T *y3 = (uint8_T *) ssGetOutputPortRealSignal(S, 3);
+    // Create a temporary byte array
+    uint8_T temp[4];
+    // This code just copies the bits of the int16 input into the two bytes of the output
+    // uint8 vector without any casting, shifting, etc.
+    memcpy(temp,u0,sizeof(real32_T));
+    y0[0] = temp[0];
+    y1[0] = temp[1];
+    y2[0] = temp[2];
+    y3[0] = temp[3];
 }
 
 /* Function: mdlTerminate =====================================================

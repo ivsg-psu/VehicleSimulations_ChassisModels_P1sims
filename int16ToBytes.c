@@ -26,7 +26,7 @@
  * | See matlabroot/simulink/src/sfuntmpl_doc.c for a more detailed template |
  *  -------------------------------------------------------------------------
  *
- * Created: Wed Oct 16 14:30:18 2024
+ * Created: Fri Oct 18 11:53:58 2024
  */
 
 #define S_FUNCTION_LEVEL               2
@@ -94,6 +94,7 @@
 #define OUT_1_FRACTIONLENGTH           3
 #define OUT_1_BIAS                     0
 #define OUT_1_SLOPE                    0.125
+
 #define NPARAMS                        0
 #define SAMPLE_TIME_0                  INHERITED_SAMPLE_TIME
 #define NUM_DISC_STATES                0
@@ -106,18 +107,16 @@
 #define USE_SIMSTRUCT                  0
 #define SHOW_COMPILE_STEPS             0
 #define CREATE_DEBUG_MEXFILE           1
-#define SAVE_CODE_ONLY                 0
+#define SAVE_CODE_ONLY                 1
 #define SFUNWIZ_REVISION               3.0
 
 /* %%%-SFUNWIZ_defines_Changes_END --- EDIT HERE TO _BEGIN */
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 #include "simstruc.h"
 
-extern void int16ToBytes_Start_wrapper(void);
-extern void int16ToBytes_Outputs_wrapper(const int16_T *u0,
-  uint8_T *y0,
-  uint8_T *y1);
-extern void int16ToBytes_Terminate_wrapper(void);
+// extern void int16ToBytes_Outputs_wrapper(const int16_T *u0,
+//   uint8_T *y0,
+//   uint8_T *y1);
 
 /*====================*
  * S-function methods *
@@ -220,7 +219,7 @@ static void mdlInitializeSizes(SimStruct *S)
   ssSetSimulinkVersionGeneratedIn(S, "24.1");
 
   /* Take care when specifying exception free code - see sfuntmpl_doc.c */
-  ssSetRuntimeThreadSafetyCompliance(S, RUNTIME_THREAD_SAFETY_COMPLIANCE_FALSE);
+  ssSetRuntimeThreadSafetyCompliance(S, RUNTIME_THREAD_SAFETY_COMPLIANCE_TRUE);
   ssSetOptions(S, (SS_OPTION_EXCEPTION_FREE_CODE |
                    SS_OPTION_WORKS_WITH_CODE_REUSE));
 }
@@ -295,7 +294,6 @@ static void mdlSetDefaultPortDataTypes(SimStruct *S)
  */
 static void mdlStart(SimStruct *S)
 {
-  int16ToBytes_Start_wrapper();
 }
 
 #endif                                 /*  MDL_START */
@@ -305,10 +303,16 @@ static void mdlStart(SimStruct *S)
  */
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
-  const int16_T *u0 = (int16_T *) ssGetInputPortRealSignal(S, 0);
-  uint8_T *y0 = (uint8_T *) ssGetOutputPortRealSignal(S, 0);
-  uint8_T *y1 = (uint8_T *) ssGetOutputPortRealSignal(S, 1);
-  int16ToBytes_Outputs_wrapper(u0, y0, y1);
+    const int16_T *u0 = (int16_T *) ssGetInputPortRealSignal(S, 0);
+    uint8_T *y0 = (uint8_T *) ssGetOutputPortRealSignal(S, 0);
+    uint8_T *y1 = (uint8_T *) ssGetOutputPortRealSignal(S, 1);
+    // Create a temporary byte array
+    uint8_T temp[2];
+    // This code just copies the bits of the int16 input into the two bytes of the output
+    // uint8 vector without any casting, shifting, etc.
+    memcpy(temp,u0,sizeof(int16_T));
+    y0[0] = temp[0];
+    y1[0] = temp[1];
 }
 
 /* Function: mdlTerminate =====================================================
@@ -319,7 +323,6 @@ static void mdlOutputs(SimStruct *S, int_T tid)
  */
 static void mdlTerminate(SimStruct *S)
 {
-  int16ToBytes_Terminate_wrapper();
 }
 
 #ifdef MATLAB_MEX_FILE                 /* Is this file being compiled as a MEX-file? */

@@ -26,7 +26,7 @@
  * | See matlabroot/simulink/src/sfuntmpl_doc.c for a more detailed template |
  *  -------------------------------------------------------------------------
  *
- * Created: Wed Oct 16 14:01:21 2024
+ * Created: Fri Oct 18 11:53:39 2024
  */
 
 #define S_FUNCTION_LEVEL               2
@@ -150,12 +150,6 @@
 /* %%%-SFUNWIZ_defines_Changes_END --- EDIT HERE TO _BEGIN */
 /*<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<*/
 #include "simstruc.h"
-
-extern void int32ToBytes_Outputs_wrapper(const int32_T *u0,
-  uint8_T *y0,
-  uint8_T *y1,
-  uint8_T *y2,
-  uint8_T *y3);
 
 /*====================*
  * S-function methods *
@@ -370,16 +364,26 @@ static void mdlStart(SimStruct *S)
  */
 static void mdlOutputs(SimStruct *S, int_T tid)
 {
-  const int32_T *u0 = (int32_T *) ssGetInputPortRealSignal(S, 0);
-  uint8_T *y0 = (uint8_T *) ssGetOutputPortRealSignal(S, 0);
-  uint8_T *y1 = (uint8_T *) ssGetOutputPortRealSignal(S, 1);
-  uint8_T *y2 = (uint8_T *) ssGetOutputPortRealSignal(S, 2);
-  uint8_T *y3 = (uint8_T *) ssGetOutputPortRealSignal(S, 3);
-  int32ToBytes_Outputs_wrapper(u0, y0, y1, y2, y3);
+    const int32_T *u0 = (int32_T *) ssGetInputPortRealSignal(S, 0);
+    uint8_T *y0 = (uint8_T *) ssGetOutputPortRealSignal(S, 0);
+    uint8_T *y1 = (uint8_T *) ssGetOutputPortRealSignal(S, 1);
+    uint8_T *y2 = (uint8_T *) ssGetOutputPortRealSignal(S, 2);
+    uint8_T *y3 = (uint8_T *) ssGetOutputPortRealSignal(S, 3);
+    // Create a temporary byte array
+    uint8_T temp[4];
+    // This code just copies the bits of the int32 input into the four bytes of the temporary
+    // uint8 vector without any casting, shifting, etc.
+    memcpy(temp,u0,sizeof(int32_T));
+    // Once the memory has been copied into the temp vector, they can be segmented to the output
+    // without any additional casting, shifting, etc.
+    y0[0] = temp[0];
+    y1[0] = temp[1];
+    y2[0] = temp[2];
+    y3[0] = temp[3];
 }
 
 /* Function: mdlTerminate =====================================================
- * Abstract:
+* Abstract:
  *    In this function, you should perform any actions that are necessary
  *    at the termination of a simulation.  For example, if memory was
  *    allocated in mdlStart, this is the place to free it.

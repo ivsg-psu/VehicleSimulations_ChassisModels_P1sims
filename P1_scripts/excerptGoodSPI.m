@@ -20,12 +20,6 @@ rt_Ignition = rt_Ignition(spiGoodInds);
 rt_IMU = rt_IMU(spiGoodInds,:);
 rt_SPI_tout = rt_SPI_tout(spiGoodInds);
 rt_spiBytesIn = rt_spiBytesIn(spiGoodInds);
-
-% Had to add to get shape of array correct
-rt_SteeringLeft  = squeeze(rt_SteeringLeft)';
-rt_SteeringRight = squeeze(rt_SteeringRight)';
-
-
 rt_SteeringLeft = rt_SteeringLeft(spiGoodInds,:);
 rt_SteeringRight = rt_SteeringRight(spiGoodInds,:);
 rt_tout = rt_tout(spiGoodInds);
