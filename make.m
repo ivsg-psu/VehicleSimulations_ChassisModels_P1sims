@@ -32,8 +32,9 @@ function make(varargin)
 %           'stateprediction.c', 'inbounds_control.c', 'lat_err_yaw4_switch_KT.c', 'drift_controller_SSC.c',...
 %           'asciiStreamtoString.c','vs330_bin3_rcv.c'};
 
-srcnames={'uint16ToBytes.c','int16ToBytes.c','int32ToBytes.c',...
-    'singleToBytes.c','bits2byte.c','enu2lla.c'};
+srcnames={'./sFunctions/uint16ToBytes.c','./sFunctions/int16ToBytes.c',...
+    './sFunctions/int32ToBytes.c','./sFunctions/singleToBytes.c',...
+    './sFunctions/bits2byte.c','./sFunctions/enu2lla.c'};
       
 % Determine the appropriate extension...
 extension=['.' mexext];
@@ -44,7 +45,7 @@ if(nargin==0)
 elseif((nargin==1)&(strcmp(varargin{1},'all')))
 		% Note that this option probably won't work, if there are any C
 		% files in the current directory that shouldn't be mexed.
-		srclist=dir('*.c');
+		srclist=dir('./sFunctions/*.c');
 else
 	srclist=curlydir(varargin);
 end
@@ -54,18 +55,18 @@ ss=length(srclist);
 
 for i=1:ss
     % Now compile anything that looks out of date...
-    infile=srclist(i).name;
+    infile=[srclist(i).folder '/' srclist(i).name];
     outfile=dir([infile(1:end-2) extension]);
     if(size(outfile,1))
         if(datenum(srclist(i).date)<=datenum(outfile(1).date))
             disp([outfile(1).name ' appears to be up-to-date.']);
         else
             disp(['Compiling ' infile]);
-            mex(infile);
+            mex('-outdir','./sFunctions',infile);
         end         
     else
         disp(['Compiling ' infile]);
-        mex(infile);
+        mex('-outdir','./sFunctions',infile);
     end
 end
 
