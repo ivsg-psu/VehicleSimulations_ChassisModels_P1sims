@@ -68,6 +68,7 @@ p1params.drivetrain.left.minTorqueStartDrive = -120; % minimum torque in regen a
 p1params.drivetrain.left.maxTorqueStartDrive = 10; % minimum torque in motoring allowed to start limp home drive mode (Nm)
 p1params.drivetrain.left.minTorqueFullDrive = -120; % minimum torque in regen allowed to start full drive mode (Nm)
 p1params.drivetrain.left.maxTorqueFullDrive = 50; % minimum torque in motoring allowed to start full drive mode (Nm)
+p1params.drivetrain.left.nDrive = 5.6; % minimum torque in regen allowed to start an active drive mode (Nm)
 
 p1params.drivetrain.right.CANTimeOut = 1.2; % CAN time out threshold (in s)
 p1params.drivetrain.right.zeroSpeedThresh = 2; % threshold for considering the vehicle to be moving slowly (m/s)
@@ -79,6 +80,7 @@ p1params.drivetrain.right.minTorqueStartDrive = -25; % minimum torque in regen a
 p1params.drivetrain.right.maxTorqueStartDrive = 10; % minimum torque in regen allowed to start an active drive mode (Nm)
 p1params.drivetrain.right.minTorqueFullDrive = -25; % minimum torque in regen allowed to start an active drive mode (Nm)
 p1params.drivetrain.right.maxTorqueFullDrive = 50; % minimum torque in regen allowed to start an active drive mode (Nm)
+p1params.drivetrain.right.nDrive = 5.6; % minimum torque in regen allowed to start an active drive mode (Nm)
 
 % Steering control parameters
 p1params.steering.left.CANTimeOut = 0.2; % CAN time out threshold (in s)

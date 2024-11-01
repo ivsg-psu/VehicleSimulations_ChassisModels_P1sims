@@ -2,10 +2,10 @@
 
 % This addresses the GPS data figure, if it exists. If not, it
 % creates a new one.
-if ~exist('handleGPSDataFig','var')
-    handleGPSDataFig = figure('Name','GPS Data','NumberTitle','off');
-    handleGPSDataFig.Position(3) = 560;
-    handleGPSDataFig.Position(4) = 720;
+if ~exist('handleGPSDataFig','var') || 0 == isvalid(handleGPSDataFig)
+    handleGPSDataFig = figure('Name','GPS Data','NumberTitle','off','WindowStyle','docked');
+    %handleGPSDataFig.Position(3) = 560;  % Cannot be used when docked
+    %handleGPSDataFig.Position(4) = 720;  % Cannot be used when docked
 else
     figure(handleGPSDataFig);
 end
@@ -100,8 +100,8 @@ grid on
 
 % This addresses the GPS Lat-Long figure, if it exists. If not, it
 % creates a new one.
-if ~exist('handleGPSLatLongFig','var')
-    handleGPSLatLongFig = figure('Name','Vehicle Lat-Long Plot','NumberTitle','off');
+if ~exist('handleGPSLatLongFig','var') || 0 == isvalid(handleGPSLatLongFig)
+    handleGPSLatLongFig = figure('Name','Vehicle Lat-Long Plot','NumberTitle','off','WindowStyle','docked');
 else
     figure(handleGPSLatLongFig);
 end

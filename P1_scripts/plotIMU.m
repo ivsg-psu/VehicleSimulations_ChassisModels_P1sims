@@ -3,8 +3,8 @@
 %% IMU
 % This addresses the IMU data figure, if it exists. If not, it
 % creates a new one.
-if ~exist('handleIMUFig','var')
-    handleIMUFig = figure('Name','IMU','NumberTitle','off');
+if ~exist('handleIMUFig','var') || 0 == isvalid(handleIMUFig)
+    handleIMUFig = figure('Name','IMU','NumberTitle','off','WindowStyle','docked');
 else
     figure(handleIMUFig)
 end

@@ -2,8 +2,8 @@
 
 % This addresses the left steering figure, if it exists. If not, it
 % creates a new one.
-if ~exist('handleControlsFig','var')
-    handleControlsFig = figure('Name','Control Panel','NumberTitle','off');
+if ~exist('handleControlsFig','var') || 0 == isvalid(handleControlsFig)
+    handleControlsFig = figure('Name','Control Panel','NumberTitle','off','WindowStyle','docked');
 else
     figure(handleControlsFig)
 end

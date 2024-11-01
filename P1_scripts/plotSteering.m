@@ -2,8 +2,8 @@
 
 % This addresses the left steering figure, if it exists. If not, it
 % creates a new one.
-if ~exist('handleSteerLeftFig','var')
-    handleSteerLeftFig = figure('Name','Steering (Left)','NumberTitle','off');
+if ~exist('handleSteerLeftFig','var') || 0 == isvalid(handleSteerLeftFig)
+    handleSteerLeftFig = figure('Name','Steering (Left)','NumberTitle','off','WindowStyle','docked');
 else
     figure(handleSteerLeftFig);
 end
@@ -29,7 +29,7 @@ ylabel('Coded')
 % Position Target Value
 subplot(4,1,2)
 plot(rt_tout,[Steering.Left.posTargetVal Steering.Left.posActualVal],'.')
-%ylim([-60000 60000])
+ylim([-60000 60000])
 title('Position Values')
 legend('Target','Actual')
 ylabel('Counts')
@@ -37,7 +37,7 @@ ylabel('Counts')
 % Velocity
 subplot(4,1,3)
 plot(rt_tout,[Steering.Left.velFeedF Steering.Left.actualVel],'.')
-%ylim([-200000 200000])
+ylim([-200000 200000])
 title('Velocity Values')
 legend('Target','Actual')
 ylabel('Counts/sec')
@@ -45,7 +45,7 @@ ylabel('Counts/sec')
 % Torque
 subplot(4,1,4)
 plot(rt_tout,[Steering.Left.currentFeedF Steering.Left.torqueActualVal],'.')
-%ylim([-20 20])
+ylim([-20 20])
 title('Torque Values')
 legend('Target','Actual')
 xlabel('Time (s)')
@@ -55,8 +55,8 @@ ylabel('Nm')
 
 % This addresses the right steering figure, if it exists. If not, it
 % creates a new one.
-if ~exist('handleSteerRightFig','var')
-    handleSteerRightFig = figure('Name','Steering (Right)','NumberTitle','off');
+if ~exist('handleSteerRightFig','var') || 0 == isvalid(handleSteerRightFig)
+    handleSteerRightFig = figure('Name','Steering (Right)','NumberTitle','off','WindowStyle','docked');
 else
     figure(handleSteerRightFig);
 end
@@ -82,7 +82,7 @@ ylabel('Coded')
 % Position Target Value
 subplot(4,1,2)
 plot(rt_tout,[Steering.Right.posTargetVal Steering.Right.posActualVal],'.')
-%ylim([-60000 60000])
+ylim([-60000 60000])
 title('Position Values')
 legend('Target','Actual')
 ylabel('Counts')
@@ -90,7 +90,7 @@ ylabel('Counts')
 % Velocity Feedforward
 subplot(4,1,3)
 plot(rt_tout,[Steering.Right.velFeedF Steering.Right.actualVel],'.')
-%ylim([-200000 200000])
+ylim([-200000 200000])
 legend('Target','Actual')
 title('Velocity Values')
 ylabel('Counts/sec')
@@ -98,7 +98,7 @@ ylabel('Counts/sec')
 % Torque
 subplot(4,1,4)
 plot(rt_tout,[Steering.Right.currentFeedF Steering.Right.torqueActualVal],'.')
-%ylim([-20 20])
+ylim([-20 20])
 legend('Target','Actual')
 title('Torque Values')
 xlabel('Time (s)')

@@ -2,8 +2,8 @@
 
 % This addresses the motor feedback figure, if it exists. If not, it
 % creates a new one.
-if ~exist('handleDriverInputFig','var')
-    handleDriverInputFig = figure('Name','Driver Input','NumberTitle','off');
+if ~exist('handleDriverInputFig','var') || 0 == isvalid(handleDriverInputFig)
+    handleDriverInputFig = figure('Name','Driver Input','NumberTitle','off','WindowStyle','docked');
 else
     figure(handleDriverInputFig);
 end

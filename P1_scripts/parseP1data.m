@@ -1,6 +1,6 @@
 % Parse all p1 data out into structures
 
-excerptGoodSPI
+%excerptGoodSPI
 
 Controls.switch.KeySwitch = bitUnpack(rt_ControlPanel,1,1);
 Controls.switch.HVEnable = bitUnpack(rt_ControlPanel,1,2);
@@ -18,9 +18,9 @@ Controls.lamp.DriveFault = bitUnpack(rt_ControlPanel,2,5);
 Controls.lamp.SteerFault = bitUnpack(rt_ControlPanel,2,6);
 Controls.lamp.DCDCOK = bitUnpack(rt_ControlPanel,2,7);
 
-Driver.brakeSwitchA = ~bitUnpack(rt_DriverInput,1,2);
-Driver.switchFNRF = bitUnpack(rt_DriverInput,1,2);
-Driver.switchFNRR = -1*bitUnpack(rt_DriverInput,1,3);
+Driver.brakeSwitchA = bitUnpack(rt_DriverInput,1,1);
+Driver.switchFNRF = bitUnpack(rt_DriverInput,1,3);
+Driver.switchFNRR = -1*bitUnpack(rt_DriverInput,1,4);
 Driver.accel_pedal = 12*3.3/4096*uint8todouble(0,0,rt_DriverInput(:,2),rt_DriverInput(:,3)); 
 Driver.steering_pot = uint8todouble(0,0,rt_DriverInput(:,4),rt_DriverInput(:,5));
 Driver.steering_angle_pot = (Driver.steering_pot-208)/246*pi/2*60/18;
@@ -38,6 +38,7 @@ Driver.handwheel_primary = uint8todouble(0,1,rt_DriverInput(:,10),rt_DriverInput
 Driver.handwheel_secondary = uint8todouble(0,1,rt_DriverInput(:,14),rt_DriverInput(:,15),rt_DriverInput(:,16),rt_DriverInput(:,17));
 Driver.latch_time = uint8todouble(0,1,rt_DriverInput(:,18),rt_DriverInput(:,19),rt_DriverInput(:,20),rt_DriverInput(:,21));
 
+%GPS.PPS = double(bitand(rt_MPUDigitalIn(:),uint8(1)));
 
 noDiffInds = find(rt_GPS(:,4) < 4 & rt_GPS(:,4) >= 2);
 diffInds = find(rt_GPS(:,4) >= 4);
@@ -57,17 +58,26 @@ GPS.Roll = rt_GPS(:,12);
 GPS.AttStat = [double(bitand(uint16(rt_GPS(:,14)),uint16(15))),...
     double(bitshift(bitand(uint16(rt_GPS(:,14)),uint16(240)),-4))+0.04,...
     double(bitshift(bitand(uint16(rt_GPS(:,14)),uint16(3840)),-8))+0.08];
+GPS.YawSTD = rt_GPS(:,15);
+GPS.RollSTD = rt_GPS(:,16);
 GPS.HorRMS = rt_GPS(:,17);
+GPS.VertRMS = rt_GPS(:,18);
+GPS.CovNN = rt_GPS(:,19);
+GPS.CovNE = rt_GPS(:,20);
+GPS.CovNU = rt_GPS(:,21);
+GPS.CovEE = rt_GPS(:,22);
+GPS.CovEU = rt_GPS(:,23);
+GPS.CovUU = rt_GPS(:,24);
 
 
 % Some constants useful for converting the raw CAN message data
 IMU.constants.IMUraw2degpersec = 500/32768;
 IMU.constants.ACCraw2mpersec = 2*9.81/32768;
 % Process the raw data into signals
-IMU.accelX = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,7),rt_IMU(:,8));
-IMU.rotRateX = IMU.constants.IMUraw2degpersec*uint8todouble(1,0,rt_IMU(:,1),rt_IMU(:,2));
-IMU.accelY = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,9),rt_IMU(:,10));
-IMU.rotRateY = IMU.constants.IMUraw2degpersec*uint8todouble(1,0,rt_IMU(:,3),rt_IMU(:,4));
+IMU.accelX = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,9),rt_IMU(:,10));
+IMU.rotRateX = IMU.constants.IMUraw2degpersec*uint8todouble(1,0,rt_IMU(:,3),rt_IMU(:,4));
+IMU.accelY = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,7),rt_IMU(:,8));
+IMU.rotRateY = IMU.constants.IMUraw2degpersec*uint8todouble(1,0,rt_IMU(:,1),rt_IMU(:,2));
 IMU.accelZ = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,11),rt_IMU(:,12));
 IMU.rotRateZ = IMU.constants.IMUraw2degpersec*uint8todouble(1,0,rt_IMU(:,5),rt_IMU(:,6));
 
@@ -75,14 +85,14 @@ IMU.rotRateZ = IMU.constants.IMUraw2degpersec*uint8todouble(1,0,rt_IMU(:,5),rt_I
 % Universal Command
 % LEFT
 Motor.Left.Command.opStateMotorL = uint8todouble(0,0,rt_DrivetrainLeft(:,1),rt_DrivetrainLeft(:,2));
-Motor.Left.Command.reqMotorTorqueL = (0.1*uint8todouble(0,0,rt_DrivetrainLeft(:,3),rt_DrivetrainLeft(:,4))) - 3212.8;
-Motor.Left.Command.limMotorSpeedFL = (0.5*uint8todouble(0,0,rt_DrivetrainLeft(:,5),rt_DrivetrainLeft(:,6))) - 16064;
-Motor.Left.Command.limMotorSpeedRL = (0.5*uint8todouble(0,0,rt_DrivetrainLeft(:,7),rt_DrivetrainLeft(:,8))) - 16064;
+Motor.Left.Command.reqMotorTorqueL = (0.1*uint8todouble(0,0,rt_DrivetrainLeft(:,5),rt_DrivetrainLeft(:,6))) - 3212.8;
+Motor.Left.Command.limMotorSpeedFL = (0.5*uint8todouble(0,0,rt_DrivetrainLeft(:,7),rt_DrivetrainLeft(:,8))) - 16064;
+Motor.Left.Command.limMotorSpeedRL = (0.5*uint8todouble(0,0,rt_DrivetrainLeft(:,9),rt_DrivetrainLeft(:,10))) - 16064;
 % Right
 Motor.Right.Command.opStateMotorR = uint8todouble(0,0,rt_DrivetrainRight(:,1),rt_DrivetrainRight(:,2));
-Motor.Right.Command.reqMotorTorqueR = (0.1*uint8todouble(0,0,rt_DrivetrainLeft(:,3),rt_DrivetrainLeft(:,4))) - 3212.8;
-Motor.Right.Command.limMotorSpeedFR = (0.5*uint8todouble(0,0,rt_DrivetrainRight(:,5),rt_DrivetrainRight(:,6))) - 16064;
-Motor.Right.Command.limMotorSpeedRR = (0.5*uint8todouble(0,0,rt_DrivetrainLeft(:,7),rt_DrivetrainLeft(:,8))) - 16064;
+Motor.Right.Command.reqMotorTorqueR = (0.1*uint8todouble(0,0,rt_DrivetrainLeft(:,5),rt_DrivetrainLeft(:,6))) - 3212.8;
+Motor.Right.Command.limMotorSpeedFR = (0.5*uint8todouble(0,0,rt_DrivetrainRight(:,7),rt_DrivetrainRight(:,8))) - 16064;
+Motor.Right.Command.limMotorSpeedRR = (0.5*uint8todouble(0,0,rt_DrivetrainLeft(:,9),rt_DrivetrainLeft(:,10))) - 16064;
 
 % Accurate feedback message
 % LEFT
