@@ -74,9 +74,9 @@ GPS.CovUU = rt_GPS(:,24);
 IMU.constants.IMUraw2degpersec = 500/32768;
 IMU.constants.ACCraw2mpersec = 2*9.81/32768;
 % Process the raw data into signals
-IMU.accelX = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,9),rt_IMU(:,10));
+IMU.accelX = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,7),rt_IMU(:,8));
 IMU.rotRateX = IMU.constants.IMUraw2degpersec*uint8todouble(1,0,rt_IMU(:,3),rt_IMU(:,4));
-IMU.accelY = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,7),rt_IMU(:,8));
+IMU.accelY = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,9),rt_IMU(:,10));
 IMU.rotRateY = IMU.constants.IMUraw2degpersec*uint8todouble(1,0,rt_IMU(:,1),rt_IMU(:,2));
 IMU.accelZ = IMU.constants.ACCraw2mpersec*uint8todouble(1,0,rt_IMU(:,11),rt_IMU(:,12));
 IMU.rotRateZ = IMU.constants.IMUraw2degpersec*uint8todouble(1,0,rt_IMU(:,5),rt_IMU(:,6));

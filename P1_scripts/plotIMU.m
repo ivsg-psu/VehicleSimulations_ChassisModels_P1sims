@@ -14,7 +14,7 @@ subplot(3,2,1)
 plot(rt_tout,IMU.accelX)
 title('Acceleration X (Longitudinal)')
 xlabel('Time (s)')
-ylabel('m/s')
+ylabel('m/s^2')
 %ylim([-20 20])
 grid on
 
@@ -32,7 +32,7 @@ subplot(3,2,3)
 plot(rt_tout,IMU.accelY)
 title('Acceleration Y (Lateral)')
 xlabel('Time (s)')
-ylabel('m/s')
+ylabel('m/s^2')
 %ylim([-20 20])
 grid on
 
@@ -50,7 +50,7 @@ subplot(3,2,5)
 plot(rt_tout,IMU.accelZ)
 title('Acceleration Z (Heave)')
 xlabel('Time (s)')
-ylabel('m/s')
+ylabel('m/s^2')
 ylim([-12 -7])
 grid on
 

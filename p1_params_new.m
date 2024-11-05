@@ -8,7 +8,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Fundamental time step of the model
-Ts = 0.001;
+Ts = 0.0001;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                       %
@@ -179,11 +179,11 @@ tire.fr.Ca = 75000/2;                % front right cornering stiffness (N/rad)
 tire.rl.Ca = 135000/2;               % rear left cornering stiffness (N/rad)
 tire.rr.Ca = 135000/2;               % rear right cornering stiffness (N/rad)
 
-% Tire effective rolling radii
+% Tire effective rolling radii (old value 0.3085?)
 tire.fl.re = 0.161*2;               % tire effective rolling radius (m)
 tire.fr.re = 0.161*2;               % tire effective rolling radius (m)
-tire.rl.re = 0.3085;                % tire effective rolling radius (m)
-tire.rr.re = 0.3085;                % tire effective rolling radius (m)
+tire.rl.re = 0.161*2;               % tire effective rolling radius (m)
+tire.rr.re = 0.161*2;               % tire effective rolling radius (m)
 
 % Tire relaxation length estimates
 tire.fl.rl = 0.3;                   % tire relaxation length (m)
