@@ -18,7 +18,7 @@ end
 Period = 10;
 
 %Define time for how long to run simulation 
-TotalTime = 4*Period;
+TotalTime = 8*Period;
 
 %future vector definition for steering input change
 
@@ -44,17 +44,10 @@ end
 LatPos=(rt_GPS(:,5)-40.9546).*111139; %Convert lat GPS signal to m
 LongPos=(rt_GPS(:,6)+76.8820).*111139; %Convert long GPS signal to m
 
-%Create array for longitudinal values
-LongVelArray=zeros(40001,1);
-LongVelArray(:)=LongVel;
-LongAccArray=zeros(40001,1);
-LongAccArray(:)=LongAcc;
-FxTireArray=zeros(40001,1);
-FxTireArray(:)=FxTire;
 
 %Create sideslip values
-Beta=atan2(LatVel,LongVelArray);
-Beta1=atan2(LongVelArray,LatVel);
+Beta=atan2(LatVel,LongVel);
+Beta1=atan2(LongVel,LatVel);
 
 %Plot Figures
 % figure(1) 
@@ -108,13 +101,13 @@ Radius = WB./AvgSteerAngle;
 
 
 %Lateral Acceleration calculation and plotting
-AyM=((LongVel)^2)./Radius;
+AyM=((LongVel).^2)./Radius;
 AyG = AyM./9.80065;
 
 %figure(3)
 %plot(tout, AyG), xlabel('Time (s)'), ylabel('Lateral Acceleration'), title('Lateral Acceleration');
-figure(4)
-plot(tout, DriveTorque), xlabel('Time(s)'), ylabel('Torque (Nm)'), title('Desired Drive Torques')
+%figure(4)
+%plot(tout, DriveTorque), xlabel('Time(s)'), ylabel('Torque (Nm)'), title('Desired Drive Torques')
 % figure(5)
 % plot(tout, DriveTorque1), xlabel('Time(s)'), ylabel('Drive'), title('Actual Drive Torques')
 % figure(6)
@@ -131,8 +124,8 @@ plot(tout, DriveTorque), xlabel('Time(s)'), ylabel('Torque (Nm)'), title('Desire
 % figure(3)
 % plot(tout, LatVel), xlabel('Time (S)'), ylabel('Lateral Velocity (m/s)'), title('Lateral Velocity') %Lateral velocity vs time
 % 
-% figure(4)
-% plot(tout, LongVelArray,'k.-'), xlabel('Time (S)'), ylabel('Longitudinal Velocity (m/s)'),title('Longitudinal Velocity') %Longitudinal velocity vs time 
+figure(4)
+plot(tout, LongVel), xlabel('Time (S)'), ylabel('Longitudinal Velocity (m/s)'),title('Longitudinal Velocity') %Longitudinal velocity vs time 
 % 
 % figure(5)
 % plot(tout, yawrate),xlabel('Time (S)'),ylabel('Yaw Rate (rad/s)'), title('Yaw Rate') %Yaw rate vs time
