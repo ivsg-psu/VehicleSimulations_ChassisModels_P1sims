@@ -13,14 +13,8 @@ if 1~=exist('p1params','var')
     p1_params_new  % Loads the parameters if the variable is not detected in the workspace
 end
 
-%Define inputs to the vehicle model 
-%Define steering input
-Period = 10;
-
 %Define time for how long to run simulation 
-TotalTime = 8*Period;
-
-%future vector definition for steering input change
+TotalTime = 40;
 
 % Stops the code here
 % return;
@@ -45,18 +39,10 @@ LatPos=(rt_GPS(:,5)-40.9546).*111139; %Convert lat GPS signal to m
 LongPos=(rt_GPS(:,6)+76.8820).*111139; %Convert long GPS signal to m
 
 
-%Create sideslip values
-Beta=atan2(LatVel,LongVel);
-Beta1=atan2(LongVel,LatVel);
-
-%Plot Figures
-% figure(1) 
-% geoplot(rt_GPS(:,5),rt_GPS(:,6)) %plot with GPS coordinates
-
 %% fcn_plotRoad_plotLL
 % geoplots Latitude and Longitude data with user-defined formatting strings
 
-fig_num = 15;
+fig_num = 1;
 figure(fig_num);
 clf;
 
@@ -74,7 +60,7 @@ plotFormat.LineStyle = '-';
 plotFormat.LineWidth = 3;
 h_geoplot = fcn_plotRoad_plotLL((LLdata), (plotFormat), (fig_num));
 
-title(sprintf('Example %.0d: showing use of plotLL',fig_num), 'Interpreter','none');
+title(sprintf('Vehicle Path',fig_num), 'Interpreter','none');
 
 % Was a figure created?
 assert(all(ishandle(fig_num)));
@@ -84,77 +70,73 @@ assert(ishandle(h_geoplot))
 
 
 
+%I dont like how convoluted this is, so this is temporary. I dont think I
+%need the zeros nonsense. Plus, this is going to have to be manually
+%updated if you change run time. NO bueno. 
+%Convert steer angles from rad to deg
+SteerAngleDeg=SteerAngle.*180/pi;
 %Calculate average steer angle
-SteerAdd=SteerAngle(:,1)+SteerAngle(:,2);
-AvgSteerAngle=SteerAdd/2;
+SteerAdd=SteerAngleDeg(:,1)+SteerAngleDeg(:,2); % (Row, Column) 
+AvgSteerAngle=SteerAdd./2;
+SteerAngleVecL=zeros(40001, 1);
+SteerAngleVecR=zeros(40001, 1);
+SteerAngleVecAvg=zeros(40001,1);
+SteerAngleVecL(:,1)=SteerAngleDeg(1,1);
+SteerAngleVecR(:,1)=SteerAngleDeg(1,2);
+SteerAngleVecAvg(:,1)=AvgSteerAngle(1,1);
+%Plot road wheel steer angles
+figure(2)
+plot(tout, SteerAngleVecL, tout, SteerAngleVecR, tout, SteerAngleVecAvg), xlabel('Time (s)'), ylabel('Steer Angle (Deg)'), title('Road Wheel Steer Angle'), legend('Left Wheel', 'Right Wheel', 'Average'), axis ([0 TotalTime 7.5 10]);
 
-%figure(1)
-%plot(tout, SteerAngle, tout, AvgSteerAngle),xlabel('Time (s)'), ylabel('Steer Angle (radians)'), title('Steer Angle'), legend('Left Wheel', 'Right Wheel', 'Average');
+%Torque request 
+figure(3)
+plot(tout, DriveTorque), xlabel('Time (s)'), ylabel('Torque (Nm)'), title('Torque Request Profile'), legend('Left Rear Wheel', 'Right Rear Wheel')
 
-
-%Radius calculation and plotting
-WB = 2.5;
-Radius = WB./AvgSteerAngle;
-
-%figure(2)
-%plot(tout, Radius), xlabel('Time (s)'), ylabel('Radius (m)'), title('Radius');
-
-
-%Lateral Acceleration calculation and plotting
-AyM=((LongVel).^2)./Radius;
-AyG = AyM./9.80065;
-
-%figure(3)
-%plot(tout, AyG), xlabel('Time (s)'), ylabel('Lateral Acceleration'), title('Lateral Acceleration');
-%figure(4)
-%plot(tout, DriveTorque), xlabel('Time(s)'), ylabel('Torque (Nm)'), title('Desired Drive Torques')
-% figure(5)
-% plot(tout, DriveTorque1), xlabel('Time(s)'), ylabel('Drive'), title('Actual Drive Torques')
-% figure(6)
-% plot(tout, DriveTorque2), xlabel('Time(s)'), ylabel('Drive'), title('Motor Torque Requests')
-% figure(7)
-% plot(tout, DriveTorque3), xlabel('Time(s)'), ylabel('Drive'), title('Wheel Torques')
-% figure(8)
-% plot(tout, DriveTorque4), xlabel('Time(s)'), ylabel('Drive'), title('Wheel Accelerations')
-
- 
-% figure(2)
-% plot(LongPos,LatPos),xlabel('X Position (m)'), ylabel('Y Position (m)'), title('Vehicle Trajectory'), axis equal %x-y plot of vehicle trajectory (meters)
-% 
-% figure(3)
-% plot(tout, LatVel), xlabel('Time (S)'), ylabel('Lateral Velocity (m/s)'), title('Lateral Velocity') %Lateral velocity vs time
-% 
+%Longitudinal Velocity
 figure(4)
-plot(tout, LongVel), xlabel('Time (S)'), ylabel('Longitudinal Velocity (m/s)'),title('Longitudinal Velocity') %Longitudinal velocity vs time 
-% 
-% figure(5)
-% plot(tout, yawrate),xlabel('Time (S)'),ylabel('Yaw Rate (rad/s)'), title('Yaw Rate') %Yaw rate vs time
-% 
-% figure(6)
-% plot(tout,Beta), xlabel('Time (S)'), ylabel('Vehicle Side Slip (rad)'), title('Vehicle Body Slip') %Sideslip vs time
-% 
-% %Need to separate these lines with a legend
-% figure(7)
-% plot(tout, FyTire), xlabel('Time (S)'), ylabel('Lateral Tire Force (N)'),title('Lateral Tire Force') %Tire force vs time
-% 
-% figure(8)
-% plot(tout, FxTireArray), xlabel('Time (S)'), ylabel('Tire Force (N)'),title('Longitudinal Tire Force') %no data
-% 
-% figure(9)
-% plot(tout, SlipAngle), xlabel('Time (S)'), ylabel('Slip Angles (rad)'),title('Individual Tire Slip Angles')
-% 
-% figure(10)
-% plot(SlipAngle, FyTire), xlabel('Tire Slip Angle (rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Force vs Slip Angle'),set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin') %Tire force vs tire slip
-% 
-% figure(11)
-% plot(Beta,yawrate), xlabel('Side Slip (rad)'), ylabel('Yaw Rate (rad/sec)') %Yaw rate
-% 
-% figure(12)
-% plot(LatAcc,LongAccArray), xlabel('Lateral Acceleration (m/s^2)'), ylabel('Longitudinal Acceleration (m/s^2)'),title('Longitudianl vs Lateral Acceleration') %Ax vs Ay 
-% 
-% figure(13) 
-% plot(tout,SteerAngle), xlabel('Time (S)'), ylabel('Steering Angle (Rad)'), title('Steering Angle') %Steering angle requested vs time
-% 
-% figure(14)
-% plot(tout, DriveTorque), xlabel('Time (S)'), ylabel('Throttle'), title('Throttle') %Throttle vs time
-% 
+plot(tout, vx), xlabel('Time (s)'), ylabel('Longitudinal Velocity (m/s)'),title('Longitudinal Velocity') %Longitudinal velocity vs time 
+
+%Lateral Velocity
+figure(5)
+plot(tout, vy), xlabel('Time (s)'), ylabel('Lateral Velocity (m/s)'), title('Lateral Velocity') %Lateral velocity vs time
+
+%Yaw Rate
+figure(6)
+plot(tout, r),xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)'), title('Yaw Rate') %Yaw rate vs time
+
+%Lateral Tire Forces
+figure(7)
+plot(tout, FyTire), xlabel('Time (s)'), ylabel('Lateral Tire Force (N)'),title('Lateral Tire Force'),legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel') 
+
+%Longitudinal Tire Forces
+figure(8)
+plot(tout, FxTire), xlabel('Time (s)'), ylabel('Tire Force (N)'),title('Longitudinal Tire Force'),legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel') 
+
+%Vehicle Side Slip calcs
+BetaRad=atan(vy./vx);
+BetaDeg=BetaRad.*180/pi;
+%Vehicle Side Slip plot
+figure(9)
+plot(tout, BetaDeg), xlabel('Time (s)'), ylabel('Side Slip (Degrees)'),title('Vehicle Side Slip')
+
+%Convert alpha to deg
+alphadeg=alpha.*180/pi
+%Tire Slip Angle
+figure(10)
+plot(tout, alphadeg), xlabel('Time (s)'), ylabel('Tire Slip Angle (Degrees)'), title('Tire Slip Anlges')
+
+%Tire Forces vs Tire Slip Angles
+figure(11)
+plot(alphadeg, FyTire), xlabel('Tire Slip Angle (Degrees)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle')
+
+%Yaw Rate vs Vehicle Side Slip
+figure (12)
+plot(BetaDeg, r), xlabel('Vehicle Side Slip Angle (deg)'), ylabel('Yaw Rate (rad/s)'), title('Yaw Rate vs Side Slip Angle')
+
+%Acceleration Plots
+figure(13)
+plot(ay, ax), xlabel('Lateral Acceleration (m/s^2)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal vs Lateral Acceleration')
+figure(14)
+plot(tout, ax),xlabel('Time (s)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal Acceleration') 
+figure(15)
+plot(tout, ay),xlabel('Time (s)'), ylabel('Lateral Acceleration (m/s^2)'), title('Lateral Acceleration') 

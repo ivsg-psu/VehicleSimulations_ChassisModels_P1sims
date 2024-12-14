@@ -7,7 +7,7 @@
 %                                                       %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Fundamental time step of the model
+%Fundamental time step of the model
 Ts = 0.001;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -160,7 +160,7 @@ n_steering = 160;   % steering drive ratio (unitless)
 cpr_handwheel = 500*4;  % 1000 CPR quadrature
 cpr_steering = 1000*4;   % 500 CPR quadrature
 
-% Dimensions and mass properties
+% Dimensions and mass propertiaties
 param.m = 1724.0;                 % mass (kg)
 param.a = 1.35;                   % cg to front axle distance (m)
 param.b = 1.15;                   % cg to rear axle distance (m)
