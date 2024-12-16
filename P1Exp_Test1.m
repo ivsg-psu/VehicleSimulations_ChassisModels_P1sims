@@ -14,7 +14,7 @@ if 1~=exist('p1params','var')
 end
 
 %Define time for how long to run simulation 
-TotalTime = 40;
+TotalTime = 80;
 
 % Stops the code here
 % return;
@@ -78,65 +78,65 @@ SteerAngleDeg=SteerAngle.*180/pi;
 %Calculate average steer angle
 SteerAdd=SteerAngleDeg(:,1)+SteerAngleDeg(:,2); % (Row, Column) 
 AvgSteerAngle=SteerAdd./2;
-SteerAngleVecL=zeros(40001, 1);
-SteerAngleVecR=zeros(40001, 1);
-SteerAngleVecAvg=zeros(40001,1);
+SteerAngleVecL=zeros((TotalTime*1000)+1, 1);
+SteerAngleVecR=zeros((TotalTime*1000)+1, 1);
+SteerAngleVecAvg=zeros((TotalTime*1000)+1,1);
 SteerAngleVecL(:,1)=SteerAngleDeg(1,1);
 SteerAngleVecR(:,1)=SteerAngleDeg(1,2);
 SteerAngleVecAvg(:,1)=AvgSteerAngle(1,1);
 %Plot road wheel steer angles
 figure(2)
-plot(tout, SteerAngleVecL, tout, SteerAngleVecR, tout, SteerAngleVecAvg), xlabel('Time (s)'), ylabel('Steer Angle (Deg)'), title('Road Wheel Steer Angle'), legend('Left Wheel', 'Right Wheel', 'Average'), axis ([0 TotalTime 7.5 10]);
+plot(tout, SteerAngleVecL, tout, SteerAngleVecR, tout, SteerAngleVecAvg), xlabel('Time (s)'), ylabel('Steer Angle (Deg)'), title('Road Wheel Steer Angle'), legend('Left Wheel', 'Right Wheel', 'Average'), axis ([15 TotalTime 8.5 10]);
 
 %Torque request 
 figure(3)
-plot(tout, DriveTorque), xlabel('Time (s)'), ylabel('Torque (Nm)'), title('Torque Request Profile'), legend('Left Rear Wheel', 'Right Rear Wheel')
+plot(tout(15001:(TotalTime*1000)+1,1), DriveTorque(15001:(TotalTime*1000)+1,1:2)), xlabel('Time (s)'), ylabel('Torque (Nm)'), title('Torque Request Profile'), legend('Left Rear Wheel', 'Right Rear Wheel'), axis ([15 TotalTime 0 400]);
 
 %Longitudinal Velocity
 figure(4)
-plot(tout, vx), xlabel('Time (s)'), ylabel('Longitudinal Velocity (m/s)'),title('Longitudinal Velocity') %Longitudinal velocity vs time 
+plot(tout(15001:(TotalTime*1000)+1,1), vx(15001:(TotalTime*1000)+1,1)), xlabel('Time (s)'), ylabel('Longitudinal Velocity (m/s)'),title('Longitudinal Velocity'), axis ([15 TotalTime 11.09 11.12]); %Longitudinal velocity vs time [11.09 11.12]
 
 %Lateral Velocity
 figure(5)
-plot(tout, vy), xlabel('Time (s)'), ylabel('Lateral Velocity (m/s)'), title('Lateral Velocity') %Lateral velocity vs time
+plot(tout(15001:(TotalTime*1000)+1,1), vy(15001:(TotalTime*1000)+1,1)), xlabel('Time (s)'), ylabel('Lateral Velocity (m/s)'), title('Lateral Velocity'), axis ([15 TotalTime -0.3 0]); %Lateral velocity vs time
 
 %Yaw Rate
 figure(6)
-plot(tout, r),xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)'), title('Yaw Rate') %Yaw rate vs time
+plot(tout(15001:(TotalTime*1000)+1,1), r(15001:(TotalTime*1000)+1,1)),xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)'), title('Yaw Rate'), axis ([15 TotalTime 0.5 0.65]); %Yaw rate vs time
 
 %Lateral Tire Forces
 figure(7)
-plot(tout, FyTire), xlabel('Time (s)'), ylabel('Lateral Tire Force (N)'),title('Lateral Tire Force'),legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel') 
+plot(tout(15001:(TotalTime*1000)+1,1), FyTire(15001:(TotalTime*1000)+1,1:4)), xlabel('Time (s)'), ylabel('Lateral Tire Force (N)'),title('Lateral Tire Force'),legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), axis ([15 TotalTime 2000 4000]);
 
 %Longitudinal Tire Forces
 figure(8)
-plot(tout, FxTire), xlabel('Time (s)'), ylabel('Tire Force (N)'),title('Longitudinal Tire Force'),legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel') 
+plot(tout(15001:(TotalTime*1000)+1,1), FxTire(15001:(TotalTime*1000)+1,1:4)), xlabel('Time (s)'), ylabel('Tire Force (N)'),title('Longitudinal Tire Force'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), axis ([15 TotalTime -200 1000]); 
 
 %Vehicle Side Slip calcs
 BetaRad=atan(vy./vx);
 BetaDeg=BetaRad.*180/pi;
 %Vehicle Side Slip plot
 figure(9)
-plot(tout, BetaDeg), xlabel('Time (s)'), ylabel('Side Slip (Degrees)'),title('Vehicle Side Slip')
+plot(tout(15001:(TotalTime*1000)+1,1), BetaDeg(15001:(TotalTime*1000)+1,1)), xlabel('Time (s)'), ylabel('Side Slip (Degrees)'),title('Vehicle Side Slip'), axis ([15 TotalTime -1.5 0]);
 
 %Convert alpha to deg
-alphadeg=alpha.*180/pi
+AlphaDeg=alpha.*180/pi;
 %Tire Slip Angle
 figure(10)
-plot(tout, alphadeg), xlabel('Time (s)'), ylabel('Tire Slip Angle (Degrees)'), title('Tire Slip Anlges')
+plot(tout(15001:(TotalTime*1000)+1,1), AlphaDeg(15001:(TotalTime*1000)+1,1:4)), xlabel('Time (s)'), ylabel('Tire Slip Angle (Degrees)'), title('Tire Slip Anlges'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), axis ([15 TotalTime -7 -3]);
 
 %Tire Forces vs Tire Slip Angles
 figure(11)
-plot(alphadeg, FyTire), xlabel('Tire Slip Angle (Degrees)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle')
+plot(AlphaDeg(15001:(TotalTime*1000)+1,4), FyTire(15001:(TotalTime*1000)+1,1:4)), xlabel('Tire Slip Angle (Degrees)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel');
 
 %Yaw Rate vs Vehicle Side Slip
 figure (12)
-plot(BetaDeg, r), xlabel('Vehicle Side Slip Angle (deg)'), ylabel('Yaw Rate (rad/s)'), title('Yaw Rate vs Side Slip Angle')
+plot(BetaDeg(15001:(TotalTime*1000)+1,1), r(15001:(TotalTime*1000)+1,1)), xlabel('Vehicle Side Slip Angle (deg)'), ylabel('Yaw Rate (rad/s)'), title('Yaw Rate vs Side Slip Angle');
 
 %Acceleration Plots
 figure(13)
-plot(ay, ax), xlabel('Lateral Acceleration (m/s^2)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal vs Lateral Acceleration')
+plot(ay(15001:(TotalTime*1000)+1,1), ax(15001:(TotalTime*1000)+1,1)), xlabel('Lateral Acceleration (m/s^2)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal vs Lateral Acceleration');
 figure(14)
-plot(tout, ax),xlabel('Time (s)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal Acceleration') 
+plot(tout(15001:(TotalTime*1000)+1,1), ax(15001:(TotalTime*1000)+1,1)),xlabel('Time (s)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal Acceleration'), axis ([15 TotalTime -0.2 0.4]);
 figure(15)
-plot(tout, ay),xlabel('Time (s)'), ylabel('Lateral Acceleration (m/s^2)'), title('Lateral Acceleration') 
+plot(tout(15001:(TotalTime*1000)+1,1), ay(15001:(TotalTime*1000)+1,1)),xlabel('Time (s)'), ylabel('Lateral Acceleration (m/s^2)'), title('Lateral Acceleration'), axis ([15 TotalTime 6 6.6]);
