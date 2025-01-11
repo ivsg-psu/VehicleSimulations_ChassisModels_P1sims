@@ -197,10 +197,68 @@ tire.fr.tp = 0.023;                 % pneumatic trail (m)
 tire.rl.tp = 0.023;                 % pneumatic trail (m)
 tire.rr.tp = 0.023;                 % pneumatic trail (m)
 
-% Made-up parameteters for slow filter - what's slow mean though?
+% Made-up parameteters for slow filter 
 [B,A] = butter(2,1/500); % 2nd order, 1 Hz cut-off, Nyquist frequency is 500 Hz given that sampling rate is 1000 Hz
 continuousFilter = tf(B,A);
 discreteFilter = c2d(continuousFilter,Ts,'tustin');
 [NUM_cellarray,DEN_cellarray] = tfdata(discreteFilter);
 hal_filter_num = NUM_cellarray{1};
 hal_filter_den = DEN_cellarray{1};
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                       %
+%        FILLING IN TRANSFER FUNCTIONS                  %
+%                                                       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+m = 1724; % kg - mass
+r = 0.322; % m - Wheel effective radius
+a = 1.35; %m - CG to front axle 
+b = 1.15; % m - CG to rear axle 
+d = 1.62/2; % m - half track width
+L = a+b;
+Iz = 1300; % kgm^2 - yaw moment of inertia
+U = 11.1; % m/s - constant speed 
+Caf = 37500; % - front cornering stiffness
+Car = 67500; % - Rear cornering stiffness
+T_nom_f = 0; % Nm - Torque front wheels
+T_nom_r = 175; %Nm - Torque rear wheels - avg
+
+
+%Defining coefficients for steer angle transfer functions
+%denominator and/or pole coefficients
+a_0 = 4*Caf*Car*L^2/(m*Iz*U^2)  -  2*(a*Caf - b*Car)/Iz;
+a_1 = 2*(Caf + Car)/(m*U)  +   2*(Caf*a^2 + Car*b^2)/(Iz*U);
+a_2 = 1;
+den = [a_2 a_1 a_0];
+%numerator coefficients 
+b_0 = 4*Car*L/(m*U*Iz)*(T_nom_f/r + Caf);
+b_1 = 2*a/Iz*(T_nom_f/r + Caf);
+
+
+Numerator_TF_FrontSteerToYawRate = [b_1 b_0];
+Denominator_TF_FrontSteerToYawRate = den;
+
+ContinuousTF_FrontSteer_YawRate = tf(Numerator_TF_FrontSteerToYawRate,Denominator_TF_FrontSteerToYawRate);
+discreteFilter = c2d(ContinuousTF_FrontSteer_YawRate,Ts,'tustin');
+[NUM_cellarray,DEN_cellarray] = tfdata(discreteFilter);
+Numerator_TF_FrontSteerToYawRate_Discrete = NUM_cellarray{1};
+Denominator_TF_FrontSteerToYawRate_Discrete = DEN_cellarray{1};
+
+
+%Defining coefficients for torque input transfer functions
+%numerator coefficients
+b_0_T = (2*2/(r*m*U*Iz))*(Car + Car);
+b_1_T = (2*d)/(r*Iz);
+
+
+Numerator_TF_RearTorqueToYawRate = [b_1_T b_0_T];
+Denominator_TF_RearTorqueToYawRate = den;
+
+ContinuousTF_RearTorque_YawRate = tf(Numerator_TF_RearTorqueToYawRate,Denominator_TF_RearTorqueToYawRate);
+discreteFilter = c2d(ContinuousTF_RearTorque_YawRate,Ts,'tustin');
+[NUM_cellarray,DEN_cellarray] = tfdata(discreteFilter);
+Numerator_TF_RearTorqueToYawRate_Discrete = NUM_cellarray{1};
+Denominator_TF_RearTorqueToYawRate_Discrete = DEN_cellarray{1};
