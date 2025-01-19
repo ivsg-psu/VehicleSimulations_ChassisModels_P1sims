@@ -250,8 +250,8 @@ Denominator_TF_FrontSteerToYawRate_Discrete = DEN_cellarray{1};
 
 %Defining coefficients for torque input transfer functions
 %numerator coefficients
-b_0_T = (2*2/(r*m*U*Iz))*(Car + Car);
-b_1_T = (2*d)/(r*Iz);
+b_0_T = 2/(r*m*U*Iz)*(Car + Car);
+b_1_T = d/(r*Iz);
 
 
 Numerator_TF_RearTorqueToYawRate = [b_1_T b_0_T];
