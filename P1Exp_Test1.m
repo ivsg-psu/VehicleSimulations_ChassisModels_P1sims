@@ -14,7 +14,7 @@ if 1~=exist('p1params','var')
 end
 
 %Define time for how long to run simulation 
-TotalTime = 250;
+TotalTime = 150;
 
 % Stops the code here
 % return;
@@ -131,20 +131,21 @@ plot(tout, vx,'.'), xlabel('Time (s)'), ylabel('Longitudinal Velocity (m/s)'),ti
 
 %Yaw Rate (Regular and Transfer Functions)
 % figure(6)
-% plot(tout(shortPlotRange,1), r(shortPlotRange,1));
+% plot(tout(shortPlotRange,1), r(shortPlotRange,1),'.');
 % xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
 % title('Yaw Rate (Torque)');
 % hold on 
-% plot(tout(shortPlotRange,1), YawRate_TF_Torque(shortPlotRange,1));
+% plot(tout(shortPlotRange,1), YawRate_TF_Torque(shortPlotRange,1),'.');
 % legend('P1 Model','Torque TF');
 
+%Steering Transfer Function
 % figure(7)
-% plot(tout(shortPlotRange,1), r(shortPlotRange,1));
+% plot(tout(shortPlotRange,1), r(shortPlotRange,1),'.');
 % xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
-% title('Yaw Rate (Steering)');
+% title('Yaw Rate (Steering Transfer Function)');
 % hold on
-% plot(tout(shortPlotRange,1), YawRate_TF(shortPlotRange,1));
-% legend('P1 Model', 'Steer TF');
+% plot(tout(shortPlotRange,1), YawRate_TF(shortPlotRange,1),'.');
+% legend('P1 Model','Steer Angle TF');
 % 
 % figure(8)
 % plot(tout(shortPlotRange,1), r(shortPlotRange,1));
