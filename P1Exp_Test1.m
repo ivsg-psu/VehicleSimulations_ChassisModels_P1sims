@@ -8,7 +8,7 @@ close all
 clc
 
 
-%Run this inital script to define parameters?
+%Run this inital script to define parameters
 if 1~=exist('p1params','var')
     p1_params_new  % Loads the parameters if the variable is not detected in the workspace
 end
@@ -32,16 +32,10 @@ end
 %parseP1data
 %plotAllData
 
-%%
-
-%GPS to position conversions
-% LatPos=(rt_GPS(:,5)-40.9546).*111139; %Convert lat GPS signal to m
-% LongPos=(rt_GPS(:,6)+76.8820).*111139; %Convert long GPS signal to m
-
 
 %% fcn_plotRoad_plotLL
 % geoplots Latitude and Longitude data with user-defined formatting strings
-
+% Plot to generate GPS
 fig_num = 1;
 figure(fig_num);
 clf;
@@ -70,9 +64,13 @@ assert(ishandle(h_geoplot))
 
 %Set range of plotting indices (time)
 plotRange = (TotalTime*1000)+1;
-shortPlotRange = 15000:plotRange;
-
-longPlotRange = 200000:plotRange;
+fullPlotRange = 10000:plotRange;
+shortPlotRange = 110000:140000; %Right before the query to a while after
+longPlotRange = 70000:plotRange; %Right before the circular steady state to full plot
+QueryPlotRange = 120000:130000; %Only limited query range
+PreQueryPlotRange = 80000:90000; %Prior to the query 
+TopQueryPlotRange = 123000:127000; %Only top of the query range
+%% 
 
 
 %I dont like how convoluted this is, so this is temporary. I dont think I
@@ -92,33 +90,181 @@ SteerAngleDeg=SteerAngle.*180/pi;
 % %Plot road wheel steer angles
 % figure(2)
 % plot(tout, SteerAngleVecL, tout, SteerAngleVecR, tout, SteerAngleVecAvg), xlabel('Time (s)'), ylabel('Steer Angle (Deg)'), title('Road Wheel Steer Angle'), legend('Left Wheel', 'Right Wheel', 'Average'), axis ([15 TotalTime 8.5 10]);
+%% 
 
-%Torque request 
+%Money Plots
+%Torque Request - shortPlotRange
+% figure(3)
+% plot(tout(shortPlotRange,1), DriveTorque(shortPlotRange,1:2),'Linewidth',2), xlabel('Time (s)'), ylabel('Torque (Nm)'), title('Torque Request Profile'), legend('Left Rear Wheel', 'Right Rear Wheel'), axis([115 135 -40 60]);
+
+%% Yaw Rate Transfer Function for Steer
+
+% figure(2)
+% plot(tout(shortPlotRange,1), r(shortPlotRange,1));
+% xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
+% title('Yaw Rate (Steering)');
+% hold on
+% plot(tout(shortPlotRange,1), YawRate_TF(shortPlotRange,1));
+% legend('P1 Model', 'Steer TF');
+
+%% Yaw Rate Transfer Function for Torque
+
+%figure(3)
+% plot(tout(shortPlotRange,1), r(shortPlotRange,1));
+% xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
+% title('Yaw Rate (Torque)');
+% hold on 
+% plot(tout(shortPlotRange,1), YawRate_TF_Torque(shortPlotRange,1));
+% legend('P1 Model','Torque TF');
+
+%% Stacked Plot
+
+%Steering Input, Torque Addition, Lateral Slip, Longitudinal Slip, Yaw Rate
+%All against time, x=tout
+%Convert HWA to Deg:
+HandwheelAngleDeg = HandwheelAngle.*(180/pi);
+%Create table 
+Time = tout;
+HandwheelAngleInput = HandwheelAngleDeg(shortPlotRange,1);
+TorqueInput = AdditionalTorqueInput(shortPlotRange);
+Alpha = alpha(shortPlotRange,1);
+Kappa = kappa(shortPlotRange,1);
+%LatForce = FyTire(fullPlotRange,1);
+%LongForce = FxTire(fullPlotRange,1);
+YawRate = r(shortPlotRange,1);
+SteerTorqueCancel = table(HandwheelAngleInput, TorqueInput, Alpha, Kappa, YawRate);
+newYlabels = ["Steer Angle (Deg)","Additional Torque Input (Nm)","Lateral Slip", "Longitudinal Slip","Yaw Rate (Rad/s)"];
 figure(3)
-plot(tout(shortPlotRange,1), DriveTorque(shortPlotRange,1:2),'.'), xlabel('Time (s)'), ylabel('Torque (Nm)'), title('Torque Request Profile'), legend('Left Rear Wheel', 'Right Rear Wheel'), axis ([15 TotalTime -400 550]);
+s=stackedplot(SteerTorqueCancel,"DisplayLabels",newYlabels);
+%Any limits needed for the stacked plotting
+s.AxesProperties(1).YLimits = [0 15];
+s.AxesProperties(2).YLimits = [-5 50];
+s.AxesProperties(3).YLimits = [-0.02 -0.001];
+s.AxesProperties(4).YLimits = [-0.00205 -0.0018];
+s.AxesProperties(5).YLimits = [0 0.15];
+% s.AxesProperties(6).YLimits = [-56 -54.5];
+% s.AxesProperties(7).YLimits = [0.05 0.12];
+% Heavy lineweight
+s.LineProperties(1).Marker = '.'; s.LineProperties(2).Marker = '.'; s.LineProperties(3).Marker = '.'; s.LineProperties(4).Marker = '.'; s.LineProperties(5).Marker = '.';
 
-% figure(31)
-% plot(tout,ControllerOut), title('Controller Output');
 
-%Longitudinal Velocity
+
+
+
+
+
+%% Tire Force Plot
+%Just in case I need this: Original Tire curve plotting
+
+%Scale range for ramped steer only
+% figure(4)
+% plot(alpha(fullPlotRange,:),FyTire(fullPlotRange,:),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.2 0.15 -3200 5200]);
+
+%Scale range for ramped torque only
+%figure(4)
+%plot(alpha(fullPlotRange,:),FyTire(fullPlotRange,:),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.017 0.02 -1200 900]);
+
+%Scale range for Steer and torque inputs, controller on
+% figure(4)
+% plot(alpha(fullPlotRange,:),FyTire(fullPlotRange,:),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.06 0.08 -2000 1500]);
+
+%Scale range for sloped corner cancel
 figure(4)
-plot(tout, vx,'.'), xlabel('Time (s)'), ylabel('Longitudinal Velocity (m/s)'),title('Longitudinal Velocity'), axis ([0 TotalTime 0 15]); %Longitudinal velocity vs time [11.09 11.12]
-
-% %Lateral Velocity
-% figure(5)
-% plot(tout(shortPlotRange,1), vy(shortPlotRange,1)), xlabel('Time (s)'), ylabel('Lateral Velocity (m/s)'), title('Lateral Velocity'), axis ([15 TotalTime -0.3 0]); %Lateral velocity vs time
+plot(alpha(shortPlotRange,:),FyTire(shortPlotRange,:),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
 
 
 
-%Want to calculate (with torque) - (without torque)
-%r_torque - r 
-%Run the first run with the torque. Output both the r_torque and the r
-%term. Don't plot anything?
-%Run the second time without torque. Comment out the r_torque so that it
-%doesn't overwrite. Keep the r value so that it does overwrite. Comment out
-%the Transfer function so that it doesn't overwrite. BUT then add the
-%plotting to the script. 
 
+
+
+
+
+
+
+
+
+
+%% Final plots for all "No queries compiled" and "All queries compiled"
+
+% Tire Lateral Force vs Lateral Slip - QueryPlotRange
+%figure(5)
+%plot(alpha_10(QueryPlotRange,2),FyTire_10(QueryPlotRange,2),'r', 'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('10 Degrees Query', '10 Degrees Pre-Query', '20 Degrees Query', '20 Degrees Pre-Query', '30 Degrees Query', '30 Degrees Pre-Query'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_10(PreQueryPlotRange,2),FyTire_10(PreQueryPlotRange,2),'-r'), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('10 Degrees Query', '10 Degrees Pre-Query', '20 Degrees Query', '20 Degrees Pre-Query', '30 Degrees Query', '30 Degrees Pre-Query'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_20(QueryPlotRange,2),FyTire_20(QueryPlotRange,2),'g','Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('10 Degrees Query', '10 Degrees Pre-Query', '20 Degrees Query', '20 Degrees Pre-Query', '30 Degrees Query', '30 Degrees Pre-Query'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_20(PreQueryPlotRange,2),FyTire_20(PreQueryPlotRange,2),'-g'), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('10 Degrees Query', '10 Degrees Pre-Query', '20 Degrees Query', '20 Degrees Pre-Query', '30 Degrees Query', '30 Degrees Pre-Query'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_30(QueryPlotRange,2),FyTire_30(QueryPlotRange,2),'b','Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('10 Degrees Query', '10 Degrees Pre-Query', '20 Degrees Query', '20 Degrees Pre-Query', '30 Degrees Query', '30 Degrees Pre-Query'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_30(PreQueryPlotRange,2),FyTire_30(PreQueryPlotRange,2),'-b'), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('10 Degrees Query', '10 Degrees Pre-Query', '20 Degrees Query', '20 Degrees Pre-Query', '30 Degrees Query', '30 Degrees Pre-Query'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+
+% 
+% figure(6)
+% plot(alpha_5(QueryPlotRange,2),FyTire_5(QueryPlotRange,2),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('5 Degrees', '10 Degrees', '15 Degrees', '20 Degrees', '25 Degrees', '30 Degrees', '35 Degrees'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_10(QueryPlotRange,2),FyTire_10(QueryPlotRange,2),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('5 Degrees', '10 Degrees', '15 Degrees', '20 Degrees', '25 Degrees', '30 Degrees', '35 Degrees'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_15(QueryPlotRange,2),FyTire_15(QueryPlotRange,2),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('5 Degrees', '10 Degrees', '15 Degrees', '20 Degrees', '25 Degrees', '30 Degrees', '35 Degrees'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_20(QueryPlotRange,2),FyTire_20(QueryPlotRange,2),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('5 Degrees', '10 Degrees', '15 Degrees', '20 Degrees', '25 Degrees', '30 Degrees', '35 Degrees'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_25(QueryPlotRange,2),FyTire_25(QueryPlotRange,2),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('5 Degrees', '10 Degrees', '15 Degrees', '20 Degrees', '25 Degrees', '30 Degrees', '35 Degrees'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_30(QueryPlotRange,2),FyTire_30(QueryPlotRange,2),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('5 Degrees', '10 Degrees', '15 Degrees', '20 Degrees', '25 Degrees', '30 Degrees', '35 Degrees'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% hold on 
+% plot(alpha_35(QueryPlotRange,2),FyTire_35(QueryPlotRange,2),'Linewidth',2), xlabel('Tire Slip Angle (Rad)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Rad) - Right Front Tire'), legend('5 Degrees', '10 Degrees', '15 Degrees', '20 Degrees', '25 Degrees', '30 Degrees', '35 Degrees'), set(gca, 'XAxisLocation', 'origin', 'YAxisLocation', 'origin'), axis([-0.05 0.02 -500 3000]);
+% 
+% 
+
+
+
+
+
+% Max used friction compared to theoretical tire limit - QueryPlotRange
+% %Convert alpha to deg
+AlphaDeg=alpha.*180/pi;
+FrictionLimits = Fz.*0.9;
+% figure(13)
+% plot(AlphaDeg(TopQueryPlotRange,4), FyTire(TopQueryPlotRange,1:4), AlphaDeg(TopQueryPlotRange,4), FrictionLimits(TopQueryPlotRange,1:4),'Linewidth',2), xlabel('Tire Slip Angle (Degrees)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle, Tire Friction Limit'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel', 'Left Front Friction Limit', 'Right Front Friction Limit', 'Left Rear Friction Limit', 'Right Rear Friction Limit');
+
+%Total Tire Force (Calculation first) - shortPlotRange
+TotalForce = sqrt(FxTire.^2 + FyTire.^2);
+figure(18)
+plot(tout(shortPlotRange,:), TotalForce(shortPlotRange,:),'Linewidth',2), xlabel('Time (s)'), ylabel('Force (N)'), title('Max Force Each Tire'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), axis([115 135 450 1000]);
+
+%Lateral Acceleration - shortPlotRange
+figure(15)
+plot(tout(shortPlotRange,1), ay(shortPlotRange,1), 'LineWidth',2),xlabel('Time (s)'), ylabel('Lateral Acceleration (m/s^2)'), title('Lateral Acceleration'), axis([115 135 0.1 0.9]);
+%
+
+
+%This works - I just need to figure out how to correctly incorporate the
+%time variable on the x axis
+% % figure(31)
+% % plot(tout,ControllerOut), title('Controller Output');
+% 
+% %Longitudinal Velocity
+% figure(4)
+% plot(tout, vx,'.'), xlabel('Time (s)'), ylabel('Longitudinal Velocity (m/s)'),title('Longitudinal Velocity'), axis ([0 TotalTime 0 15]); %Longitudinal velocity vs time [11.09 11.12]
+% 
+% % %Lateral Velocity
+% % figure(5)
+% % plot(tout(shortPlotRange,1), vy(shortPlotRange,1)), xlabel('Time (s)'), ylabel('Lateral Velocity (m/s)'), title('Lateral Velocity'), axis ([15 TotalTime -0.3 0]); %Lateral velocity vs time
+% 
+% 
+% 
+% %Want to calculate (with torque) - (without torque)
+% %r_torque - r 
+% %Run the first run with the torque. Output both the r_torque and the r
+% %term. Don't plot anything. 
+% %Run the second time without torque. Comment out the r_torque so that it
+% %doesn't overwrite. Keep the r value so that it does overwrite. Comment out
+% %the Transfer function so that it doesn't overwrite. BUT then add the
+% %plotting to the script. 
+% 4/15 - right now I am going to skip fixing this because I forget how to
+% do it :( Going to come back at a later date. 
 % r_diff = r_torque-r;
 % figure(10)
 % plot(tout,r_diff);
@@ -128,121 +274,90 @@ plot(tout, vx,'.'), xlabel('Time (s)'), ylabel('Longitudinal Velocity (m/s)'),ti
 % hold on 
 % plot(tout(shortPlotRange,1), YawRate_TF_Torque(shortPlotRange,1));
 % legend('P1 Model','Torque TF');
+% % 
+%
 
-%Yaw Rate (Regular and Transfer Functions)
-% figure(6)
-% plot(tout(shortPlotRange,1), r(shortPlotRange,1));
-% xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
-% title('Yaw Rate (Torque)');
-% hold on 
-% plot(tout(shortPlotRange,1), YawRate_TF_Torque(shortPlotRange,1));
-% legend('P1 Model','Torque TF');
 
-% figure(7)
-% plot(tout(shortPlotRange,1), r(shortPlotRange,1));
-% xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
-% title('Yaw Rate (Steering)');
-% hold on
-% plot(tout(shortPlotRange,1), YawRate_TF(shortPlotRange,1));
-% legend('P1 Model', 'Steer TF');
+figure(115)
+plot(tout(longPlotRange,1), r(longPlotRange,1), 'LineWidth', 2);
+xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
+title('Yaw Rate');
+% axis([110 140 0.2 0.3])
+% % 
 % 
-% figure(8)
-% plot(tout(shortPlotRange,1), r(shortPlotRange,1));
-% xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
-% title('Yaw Rate');
-
-
-
-% figure(9)
-% plot(tout(shortPlotRange,1),r_torque(shortPlotRange,1));
-% xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
-% title('Yaw Rate Torque Addition');
-
-
-
-
-
+% 
+% % figure(9)
+% % plot(tout(shortPlotRange,1),r_torque(shortPlotRange,1));
+% % xlabel('Time (s)'),ylabel('Yaw Rate (rad/s)');
+% % title('Yaw Rate Torque Addition');
+% 
+% 
+% 
+% 
+% 
 %Lateral Tire Forces
-% figure(7)
-% plot(tout(shortPlotRange,1), FyTire(shortPlotRange,1:4)), xlabel('Time (s)'), ylabel('Lateral Tire Force (N)'),title('Lateral Tire Force'),legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), axis ([15 TotalTime -1000 1000]);
+figure(7)
+plot(tout(:,1), FyTire(:,1:4), 'Linewidth',2), xlabel('Time (s)'), ylabel('Lateral Tire Force (N)'),title('Lateral Tire Force'),legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel');
 
-% %Longitudinal Tire Forces
-% figure(8)
-% plot(tout(shortPlotRange,1), FxTire(shortPlotRange,1:4)), xlabel('Time (s)'), ylabel('Tire Force (N)'),title('Longitudinal Tire Force'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), axis ([15 TotalTime -200 1000]); 
+%Longitudinal Tire Forces
+figure(8)
+plot(tout(:,1), FxTire(:,1:4), 'Linewidth',2), xlabel('Time (s)'), ylabel('Tire Force (N)'),title('Longitudinal Tire Force'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'); 
 % 
-% %Vehicle Side Slip calcs
-% BetaRad=atan(vy./vx);
-% BetaDeg=BetaRad.*180/pi;
-% %Vehicle Side Slip plot
-% figure(9)
-% plot(tout(shortPlotRange,1), BetaDeg(shortPlotRange,1)), xlabel('Time (s)'), ylabel('Side Slip (Degrees)'),title('Vehicle Side Slip'), axis ([15 TotalTime -1.5 0]);
-% 
-%Convert alpha to deg
-AlphaDeg=alpha.*180/pi;
-% %Tire Slip Angle
+% % %Vehicle Side Slip calcs
+% % BetaRad=atan(vy./vx);
+% % BetaDeg=BetaRad.*180/pi;
+% % %Vehicle Side Slip plot
+% % figure(9)
+% % plot(tout(shortPlotRange,1), BetaDeg(shortPlotRange,1)), xlabel('Time (s)'), ylabel('Side Slip (Degrees)'),title('Vehicle Side Slip'), axis ([15 TotalTime -1.5 0]);
+% % 
+
+
+
+
+%Tire Slip Angle
 % figure(10)
 % plot(tout(shortPlotRange,1), AlphaDeg(shortPlotRange,1:4)), xlabel('Time (s)'), ylabel('Tire Slip Angle (Degrees)'), title('Tire Slip Anlges'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel'), axis ([15 TotalTime -7 -3]);
-% 
+
 %Tire Forces vs Tire Slip Angles
 % figure(11)
 % plot(AlphaDeg(shortPlotRange,4), FyTire(shortPlotRange,1:4)), xlabel('Tire Slip Angle (Degrees)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle (Deg)'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel');
-% 
-% figure(22)
-% plot(tout, AlphaDeg), xlabel('time'), ylabel('alpha'), title('slip angle'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel');
+% % % 
+% % figure(22)
+% % plot(tout, AlphaDeg), xlabel('time'), ylabel('alpha'), title('slip angle'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel');
+% % % 
+% %Yaw Rate vs Vehicle Side Slip
+% % figure (12)
+% % plot(BetaDeg(shortPlotRange,1), r(shortPlotRange,1)), xlabel('Vehicle Side Slip Angle (deg)'), ylabel('Yaw Rate (rad/s)'), title('Yaw Rate vs Side Slip Angle');
 % % 
-% figure(12)
-% plot(alpha(shortPlotRange,4),FyTire(shortPlotRange,1:4)), xlabel('Tire Slip Angle (Radians)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle(Rad)'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel');
-% % %Yaw Rate vs Vehicle Side Slip
-% figure (12)
-% plot(BetaDeg(shortPlotRange,1), r(shortPlotRange,1)), xlabel('Vehicle Side Slip Angle (deg)'), ylabel('Yaw Rate (rad/s)'), title('Yaw Rate vs Side Slip Angle');
-% 
-FrictionLimits = Fz.*0.9;
-figure(17)
-plot(tout, FrictionLimits,'.'), xlabel('Time (s)'), ylabel('Force (N)'),title('Tire Friction Limit'),legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel');
-
-figure(13)
-plot(AlphaDeg(longPlotRange,4), FyTire(longPlotRange,1:4),'.', AlphaDeg(longPlotRange,4), FrictionLimits(longPlotRange,1:4),'.'), xlabel('Tire Slip Angle (Degrees)'), ylabel('Lateral Tire Force (N)'), title('Lateral Tire Force vs Tire Slip Angle, Tire Friction Limit'), legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel', 'LF Lim', 'RF Lim', 'LR Lim', 'RR Lim');
-
-%Max Tire Force
-TotalForce = sqrt(FxTire.^2 + FyTire.^2);
-figure(18)
-plot(tout, TotalForce,'.'), xlabel('Time (s)'), ylabel('Force (N)'), title('Max Force Each Tire'), legend('LF', 'RF', 'LR', 'RR')
-
-
-% %Acceleration Plots
-% figure(13)
-% plot(ay(shortPlotRange,1), ax(shortPlotRange,1)), xlabel('Lateral Acceleration (m/s^2)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal vs Lateral Acceleration');
-% figure(14)
-% plot(tout(shortPlotRange,1), ax(shortPlotRange,1)),xlabel('Time (s)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal Acceleration'), axis ([15 TotalTime -0.2 0.4]);
-% figure(15)
-% plot(tout(shortPlotRange,1), ay(shortPlotRange,1)),xlabel('Time (s)'), ylabel('Lateral Acceleration (m/s^2)'), title('Lateral Acceleration'), axis ([15 TotalTime 6 6.6]);
-% 
-% %% 
-
-
-%Stacked Plotting
-%Create a stacked plot of yaw rate, torque addition, and steering input,
-%all against time. x=tout, y=steerinput,torqueadd,yawrate
-%Create table first
-Time = tout;
-HandwheelAngle1 = HandwheelAngle(shortPlotRange,1);
-TorqueInput = DriveTorque(shortPlotRange,1);
-Alpha = alpha(shortPlotRange,1);
-Kappa = kappa(shortPlotRange,1);
-YawRate = r(shortPlotRange,1);
-SteerTorqueCancel = table(HandwheelAngle1, TorqueInput, Alpha, Kappa, YawRate);
-newYlabels = ["Handwheel Angle (rad)","Single Wheel Torque Input (Nm)","Lateral Slip", "Longitudinal Slip","Yaw Rate (rad/s)"];
-figure(16)
-stackedplot(SteerTorqueCancel, "Title", "Torque Cancellation","DisplayLabels",newYlabels);
-%This works - I just need to figure out how to correctly incorporate the
-%time variable on the x axis
-
-%Calculating radius
-% R=2.5./(HandwheelAngle./10); 
 % figure(17)
-% plot(tout,R), xlabel('time'), ylabel('radius'),title('Vehicle Radius');
+% plot(tout, FrictionLimits,'.'), xlabel('Time (s)'), ylabel('Force (N)'),title('Tire Friction Limit'),legend('Left Front Wheel', 'Right Front Wheel', 'Left Rear Wheel', 'Right Rear Wheel');
 % 
 
+
+% mu = Fmaxlat./Fz
+% FrictionUtilization = sqrt((FxTire./Fz).^2 + (FyTire./Fz).^2);
+% figure(19)
+% plot(tout, FrictionUtilization,'.'), xlabel('Time (s)'), ylabel('Friction'), title('Friction Utilization'), legend('LF', 'RF', 'LR', 'RR')
+
+% 
+% 
+% % %Acceleration Plots
+% % figure(13)
+% % plot(ay(shortPlotRange,1), ax(shortPlotRange,1)), xlabel('Lateral Acceleration (m/s^2)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal vs Lateral Acceleration');
+% % figure(14)
+% % plot(tout(shortPlotRange,1), ax(shortPlotRange,1)),xlabel('Time (s)'), ylabel('Longitudinal Acceleration (m/s^2)'), title('Longitudinal Acceleration'), axis ([15 TotalTime -0.2 0.4]);
+ 
+
+
+
+
+% 
+% %Calculating radius
+% % R=2.5./(HandwheelAngle./10); 
+% % figure(17)
+% % plot(tout,R), xlabel('time'), ylabel('radius'),title('Vehicle Radius');
+% % 
+% 
 
 
 
@@ -290,10 +405,4 @@ stackedplot(SteerTorqueCancel, "Title", "Torque Cancellation","DisplayLabels",ne
 % Yaw_Torque = [-d/(r*Iz)*s  -  (2*s/(r*m*U*Iz)*(Car + Car)]/poles;
 
 
-%Add in the following plots:
-%1. Add alpha (lateral slip) and kappa (longitudinal slip) into the stacked
-%plot. DONE
-%2. To the Tire Force vs Tire Slip plot, add the max friction value of the
-%tires by multiplying Fz by a coefficient of friction (0.9). 
-%3. Add another plot of Max Tire Force: sqrt(Lat_force^2 + Long_force^2)
 
